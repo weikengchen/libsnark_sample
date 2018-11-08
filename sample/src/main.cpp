@@ -3,7 +3,10 @@
 #include <libsnark/relations/constraint_satisfaction_problems/r1cs/examples/r1cs_examples.hpp>
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_gg_ppzksnark/r1cs_gg_ppzksnark.hpp>
 
+#include <fstream>
+
 using namespace libsnark;
+using namespace std;
 
 template<typename ppT>
 bool run_r1cs_gg_ppzksnark(const r1cs_example<libff::Fr<ppT> > &example)
@@ -12,9 +15,31 @@ bool run_r1cs_gg_ppzksnark(const r1cs_example<libff::Fr<ppT> > &example)
     r1cs_gg_ppzksnark_keypair<ppT> keypair = r1cs_gg_ppzksnark_generator<ppT>(example.constraint_system);
     printf("\n"); libff::print_indent(); libff::print_mem("after generator");
 
+    // ofstream pk_data, vk_data;
+    // pk_data.open("print_pk");
+    // vk_data.open("print_vk");
+    //
+    // pk_data<<keypair.pk<<endl;
+    // vk_data<<keypair.vk<<endl;
+    //
+    // pk_data.close();
+    // vk_data.close();
+
+    // {
+    //   ifstream pk_data, vk_data;
+    //   pk_data.open("print_pk");
+    //   vk_data.open("print_vk");
+    //
+    //   pk_data>>keypair.pk;
+    //   vk_data>>keypair.vk;
+    //
+    //   pk_data.close();
+    //   vk_data.close();
+    // }
+
     libff::print_header("Preprocess verification key");
     r1cs_gg_ppzksnark_processed_verification_key<ppT> pvk = r1cs_gg_ppzksnark_verifier_process_vk<ppT>(keypair.vk);
-    
+
 
     libff::print_header("R1CS GG-ppzkSNARK Prover");
     r1cs_gg_ppzksnark_proof<ppT> proof = r1cs_gg_ppzksnark_prover<ppT>(keypair.pk, example.primary_input, example.auxiliary_input);
