@@ -87,9 +87,15 @@ protoboard< libff::Fr<ppT_B> > test_verifier_B(protoboard<FieldT> pb_A, const st
   printf("positive test:\n");
   assert(pb_B.is_satisfied());
 
-  pb_B.val(primary_input_bits[0]) = FieldT_B::one() - pb_B.val(primary_input_bits[0]);
+  cerr<<1<<endl;
+  pb_variable<FieldT_B> tmp = primary_input_bits[0];
+  cerr<<3<<endl;
+  //pb_B.val(primary_input_bits[0]) = FieldT_B::one()- pb_B.val(primary_input_bits[0]);
+  pb_B.val(tmp) = FieldT_B::one()- pb_B.val(tmp);
+  cerr<<2<<endl;
   verifier.generate_r1cs_witness();
   pb_B.val(result) = FieldT_B::one();
+
 
   printf("negative test:\n");
   assert(!pb_B.is_satisfied());
