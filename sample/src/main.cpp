@@ -185,6 +185,19 @@ r1cs_example<FieldT_A> get_MT_instance(const size_t tree_depth)
   return new_example;
 }
 
+template<typename ppT_A, typename ppT_B, typename FieldT_A, typename FieldT_B>
+protoboard<FieldT_A> merge_proof(const protoboard<FieldT_B> &pb_1, const protoboard<FieldT_B> &pb_2)
+{
+  protoboard<FieldT_A> pb;
+  pb_variable_array<FieldT_A> primary_input_bits;
+  primary_input_bits.allocate(pb, pb_1.primary_input().size() + pb_2.primary_input().size(), "primary_input");
+
+  pb_variable_array<FieldT_A> auxiliary_input_bits;
+  auxiliary_input_bits.allocate(pb, pb_1.auxiliary_input().size() + pb_2.auxiliary_input().size(), "auxiliary_input");
+
+  
+}
+
 template<typename ppT_A, typename ppT_B, typename HashT_A, typename HashT_B>
 void test_verifier(const std::string &annotation_A, const std::string &annotation_B)
 {
@@ -206,13 +219,17 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
   cerr<<"\n\n\n\n===============\n\n\n\n"<<endl;
 
 
-  protoboard<FieldT_B> pb_B = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B);
+  protoboard<FieldT_B> pb_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B);
 
   // try recursive proofs
 
-  r1cs_example<FieldT_B> another_example = get_MT_instance<ppT_B, FieldT_B, HashT_B>(16);
+  cerr<<"start second proof"<<endl;
 
-  
+  r1cs_example<FieldT_A> another_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
+  protoboard<FieldT_B> pb_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B);
+
+  // merge proof
+  protoboard<FieldT_A> pb = merge_proof< ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_1, pb_2);
 }
 
 template<typename ppT_A, typename ppT_B>
