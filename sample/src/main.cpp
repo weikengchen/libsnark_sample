@@ -89,9 +89,12 @@ protoboard< libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_
   verifier.generate_r1cs_witness();
   pb.val(result) = FieldT_B::one();
 
+  pb.set_input_sizes(vk_size_in_bits + primary_input_size_in_bits);
+
   printf("positive test:\n");
   assert(pb.is_satisfied());
   cerr<<pb.is_satisfied()<<endl;
+  cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
   pb.val(primary_input_bits[0]) = FieldT_B::one() - pb.val(primary_input_bits[0]);
   verifier.generate_r1cs_witness();
@@ -122,7 +125,7 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
 
   // generate the merkle tree instance
   const size_t digest_len = HashT::get_digest_len();
-  const size_t tree_depth = 40;
+  const size_t tree_depth = 16;
   std::vector<merkle_authentication_node> path(tree_depth);
 
   libff::bit_vector prev_hash(digest_len);
@@ -195,7 +198,9 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
   cerr<<"\n\n\n\n===============\n\n\n\n"<<endl;
 
 
-  test_verifier_B< ppT_A, ppT_B, FieldT, HashT>(new_example, annotation_A, annotation_B);
+  protoboard<FieldT_B> pb_B = test_verifier_B< ppT_A, ppT_B, FieldT, HashT>(new_example, annotation_A, annotation_B);
+
+  // try recursive proofs
 
 }
 
