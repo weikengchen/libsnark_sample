@@ -37,7 +37,7 @@ void dump_constraints(const protoboard<FieldT> &pb)
 #endif
 }
 
-template<typename ppT_A, typename ppT_B, typename FieldT, typename HashT>
+template<typename ppT_A, typename ppT_B>
 protoboard< libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A>> &example, const std::string &annotation_A, const std::string &annotation_B)
 {
   typedef libff::Fr<ppT_A> FieldT_A;
@@ -110,22 +110,12 @@ protoboard< libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_
   return pb;
 }
 
-template<typename ppT_A, typename ppT_B, typename FieldT, typename HashT>
-void test_verifier(const std::string &annotation_A, const std::string &annotation_B)
+template<typename ppT_A, typename FieldT_A, typename HashT>
+r1cs_example<FieldT_A> get_MT_instance(const size_t tree_depth)
 {
-  typedef libff::Fr<ppT_A> FieldT_A;
-  typedef libff::Fr<ppT_B> FieldT_B;
-
-  //const size_t num_constraints = 50;
-  //const size_t primary_input_size = 1;
-
-  //r1cs_example<FieldT_A> example = generate_r1cs_example_with_field_input<FieldT_A>(num_constraints, primary_input_size);
-  //assert(example.primary_input.size() == primary_input_size);
-  //r1cs_example<FieldT_A> example = gen_r1cs_example_from_protoboard<FieldT_A>(50);
-
   // generate the merkle tree instance
   const size_t digest_len = HashT::get_digest_len();
-  const size_t tree_depth = 16;
+  //const size_t tree_depth = 16;
   std::vector<merkle_authentication_node> path(tree_depth);
 
   libff::bit_vector prev_hash(digest_len);
@@ -154,15 +144,15 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
   libff::bit_vector root = prev_hash;
 
   // generate protoboard for the merkle tree instance
-  protoboard<FieldT> pb;
+  protoboard<FieldT_A> pb;
 
-  pb_variable_array<FieldT> address_bits_va;
+  pb_variable_array<FieldT_A> address_bits_va;
 
   address_bits_va.allocate(pb, tree_depth, "address_bits");
-  digest_variable<FieldT> leaf_digest(pb, digest_len, "input_block");
-  digest_variable<FieldT> root_digest(pb, digest_len, "output_digest");
-  merkle_authentication_path_variable<FieldT, HashT> path_var(pb, tree_depth, "path_var");
-  merkle_tree_check_read_gadget<FieldT, HashT> ml(pb, tree_depth, address_bits_va, leaf_digest, root_digest, path_var, ONE, "ml");
+  digest_variable<FieldT_A> leaf_digest(pb, digest_len, "input_block");
+  digest_variable<FieldT_A> root_digest(pb, digest_len, "output_digest");
+  merkle_authentication_path_variable<FieldT_A, HashT> path_var(pb, tree_depth, "path_var");
+  merkle_tree_check_read_gadget<FieldT_A, HashT> ml(pb, tree_depth, address_bits_va, leaf_digest, root_digest, path_var, pb_variable<FieldT_A>(0), "ml");
 
   pb.set_input_sizes(tree_depth+digest_len*2);
 
@@ -192,24 +182,46 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
   assert(bit);
   cerr<<bit<<endl;
 
+  return new_example;
+}
+
+template<typename ppT_A, typename ppT_B, typename HashT_A, typename HashT_B>
+void test_verifier(const std::string &annotation_A, const std::string &annotation_B)
+{
+  typedef libff::Fr<ppT_A> FieldT_A;
+  typedef libff::Fr<ppT_B> FieldT_B;
+
+  //const size_t num_constraints = 50;
+  //const size_t primary_input_size = 1;
+
+  //r1cs_example<FieldT_A> example = generate_r1cs_example_with_field_input<FieldT_A>(num_constraints, primary_input_size);
+  //assert(example.primary_input.size() == primary_input_size);
+  //r1cs_example<FieldT_A> example = gen_r1cs_example_from_protoboard<FieldT_A>(50);
+
+  r1cs_example<FieldT_A> new_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
+
   // generate the verifier protoboard for the protoboard of the merkle tree instance
   //cerr<<new_example.constraint_system.auxiliary_input_size<<' '<<new_example.constraint_system.primary_input_size<<endl;
   //exit(0);
   cerr<<"\n\n\n\n===============\n\n\n\n"<<endl;
 
 
-  protoboard<FieldT_B> pb_B = test_verifier_B< ppT_A, ppT_B, FieldT, HashT>(new_example, annotation_A, annotation_B);
+  protoboard<FieldT_B> pb_B = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B);
 
   // try recursive proofs
 
+  r1cs_example<FieldT_B> another_example = get_MT_instance<ppT_B, FieldT_B, HashT_B>(16);
+
+  
 }
 
 template<typename ppT_A, typename ppT_B>
 void test_all_merkle_tree_gadgets()
 {
-    typedef libff::Fr<ppT_A> FieldT;
+    typedef libff::Fr<ppT_A> FieldT_A;
+    typedef libff::Fr<ppT_B> FieldT_B;
 
-    test_verifier< ppT_A, ppT_B, FieldT, CRH_with_bit_out_gadget<FieldT> >("mnt4", "mnt6");
+    test_verifier< ppT_A, ppT_B, CRH_with_bit_out_gadget<FieldT_A>,  CRH_with_bit_out_gadget<FieldT_B>>("mnt4", "mnt6");
 //    test_merkle_tree_check_read_gadget<FieldT, CRH_with_bit_out_gadget<FieldT> >();
 //    test_merkle_tree_check_read_gadget<FieldT, sha256_two_to_one_hash_gadget<FieldT> >();
 
