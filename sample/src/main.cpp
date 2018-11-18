@@ -113,43 +113,84 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
   typedef libff::Fr<ppT_A> FieldT_A;
   typedef libff::Fr<ppT_B> FieldT_B;
 
-  const size_t num_constraints = 50;
-  const size_t primary_input_size = 1;
+  //const size_t num_constraints = 50;
+  //const size_t primary_input_size = 1;
 
   //r1cs_example<FieldT_A> example = generate_r1cs_example_with_field_input<FieldT_A>(num_constraints, primary_input_size);
   //assert(example.primary_input.size() == primary_input_size);
-  r1cs_example<FieldT_A> example = gen_r1cs_example_from_protoboard<FieldT_A>(50);
+  //r1cs_example<FieldT_A> example = gen_r1cs_example_from_protoboard<FieldT_A>(50);
 
-  r1cs_constraint_system<FieldT_A> cs = move(example.constraint_system);
-  r1cs_primary_input<FieldT_A> primary_input = move(example.primary_input);
-  r1cs_auxiliary_input<FieldT_A> auxiliary_input = move(example.auxiliary_input);
+  // generate the merkle tree instance
+  const size_t digest_len = HashT::get_digest_len();
+  const size_t tree_depth = 40;
+  std::vector<merkle_authentication_node> path(tree_depth);
 
-  r1cs_variable_assignment<FieldT> full_variable_assignment;
+  libff::bit_vector prev_hash(digest_len);
+  std::generate(prev_hash.begin(), prev_hash.end(), [&]() { return std::rand() % 2; });
+  libff::bit_vector leaf = prev_hash;
 
-  for (const FieldT_A &el : primary_input) {
-    full_variable_assignment.push_back(el);
+  libff::bit_vector address_bits;
+
+  size_t address = 0;
+  for (long level = tree_depth-1; level >= 0; --level)
+  {
+      const bool computed_is_right = (std::rand() % 2);
+      address |= (computed_is_right ? 1ul << (tree_depth-1-level) : 0);
+      address_bits.push_back(computed_is_right);
+      libff::bit_vector other(digest_len);
+      std::generate(other.begin(), other.end(), [&]() { return std::rand() % 2; });
+
+      libff::bit_vector block = prev_hash;
+      block.insert(computed_is_right ? block.begin() : block.end(), other.begin(), other.end());
+      libff::bit_vector h = HashT::get_hash(block);
+
+      path[level] = other;
+
+      prev_hash = h;
   }
+  libff::bit_vector root = prev_hash;
 
-  for (const FieldT_A &el : auxiliary_input) {
-    full_variable_assignment.push_back(el);
-  }
+  // generate protoboard for the merkle tree instance
+  protoboard<FieldT> pb;
 
-  r1cs_primary_input<FieldT_A> new_primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + primary_input_size);
-  r1cs_primary_input<FieldT_A> new_auxiliary_input(full_variable_assignment.begin() + primary_input_size, full_variable_assignment.end());
-  cs.primary_input_size = new_primary_input.size();
-  cs.auxiliary_input_size = new_auxiliary_input.size();
+  pb_variable_array<FieldT> address_bits_va;
 
-  r1cs_example<FieldT_A> new_example = r1cs_example<FieldT_A>(std::move(cs), std::move(new_primary_input), std::move(new_auxiliary_input));
+  address_bits_va.allocate(pb, tree_depth, "address_bits");
+  digest_variable<FieldT> leaf_digest(pb, digest_len, "input_block");
+  digest_variable<FieldT> root_digest(pb, digest_len, "output_digest");
+  merkle_authentication_path_variable<FieldT, HashT> path_var(pb, tree_depth, "path_var");
+  merkle_tree_check_read_gadget<FieldT, HashT> ml(pb, tree_depth, address_bits_va, leaf_digest, root_digest, path_var, ONE, "ml");
+
+  pb.set_input_sizes(tree_depth+digest_len*2);
+
+  path_var.generate_r1cs_constraints();
+  ml.generate_r1cs_constraints();
+
+  address_bits_va.fill_with_bits(pb, address_bits);
+  assert(address_bits_va.get_field_element_from_bits(pb).as_ulong() == address);
+  leaf_digest.generate_r1cs_witness(leaf);
+  path_var.generate_r1cs_witness(address, path);
+  root_digest.generate_r1cs_witness(root);
+  ml.generate_r1cs_witness();
+
+
+  address_bits_va.fill_with_bits(pb, address_bits);
+  leaf_digest.generate_r1cs_witness(leaf);
+  root_digest.generate_r1cs_witness(root);
+  assert(pb.is_satisfied());
+  cerr<<pb.is_satisfied()<<endl;
+  cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
+
+  r1cs_example<FieldT_A> new_example = r1cs_example<FieldT_A>(std::move(pb.get_constraint_system()), std::move(pb.primary_input()), std::move(pb.auxiliary_input()));
 
   const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(new_example.constraint_system);
   const r1cs_ppzksnark_proof<ppT_A> pi = r1cs_ppzksnark_prover<ppT_A>(keypair.pk, new_example.primary_input, new_example.auxiliary_input);
   bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_A>(keypair.vk, new_example.primary_input, pi);
   assert(bit);
   cerr<<bit<<endl;
-  //exit(0);
 
   // generate the verifier protoboard for the protoboard of the merkle tree instance
-  cerr<<new_example.constraint_system.auxiliary_input_size<<' '<<new_example.constraint_system.primary_input_size<<endl;
+  //cerr<<new_example.constraint_system.auxiliary_input_size<<' '<<new_example.constraint_system.primary_input_size<<endl;
   //exit(0);
   cerr<<"\n\n\n\n===============\n\n\n\n"<<endl;
 
