@@ -118,7 +118,9 @@ r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT
         verifier.generate_r1cs_witness();
         pb.val(result) = FieldT_B::one();
 
-        pb.set_input_sizes(vk_size_in_bits + primary_input_size_in_bits);
+        cerr<<"divide: "<<vk_size_in_bits % elt_size <<endl;
+        pb.set_input_sizes(vk_size_in_bits / elt_size + example.constraint_system.primary_input_size);
+        //cerr<<pb.num_inputs()<<' '<<vk_size_in_bits / elt_size + example.constraint_system.primary_input_size<<endl;
 
         printf("positive test:\n");
         assert(pb.is_satisfied());
@@ -217,7 +219,7 @@ r1cs_example<FieldT_A> get_MT_instance(const size_t tree_depth)
         address_bits_va.fill_with_bits(pb, address_bits);
         assert(pb.is_satisfied());
 
-        pb.set_input_sizes(tree_depth+digest_len*4);
+        pb.set_input_sizes(1+digest_len*4);
 
         const size_t num_constraints = pb.num_constraints();
         const size_t expected_constraints = merkle_tree_check_update_gadget<FieldT_A, HashT>::expected_constraints(tree_depth);
@@ -344,14 +346,17 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         cerr<<"test final proof"<<endl;
         assert(final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input));
         cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-
+/*
         cerr<<final_example.primary_input.size()<<' '<<final_example.auxiliary_input.size()<<endl;
         cerr<<final_example.constraint_system.num_constraints()<<endl;
         const r1cs_ppzksnark_keypair<ppT_B> keypair = r1cs_ppzksnark_generator<ppT_B>(final_example.constraint_system);
         const r1cs_ppzksnark_proof<ppT_B> pi = r1cs_ppzksnark_prover<ppT_B>(keypair.pk, final_example.primary_input, final_example.auxiliary_input);
         bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_B>(keypair.vk, final_example.primary_input, pi);
         assert(bit);
-        cerr<<bit<<endl;
+        cerr<<bit<<endl;*/
+
+
+
 }
 
 template<typename ppT_A, typename ppT_B>
