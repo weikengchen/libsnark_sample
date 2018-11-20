@@ -4,6 +4,8 @@
  *             and contributors (see AUTHORS).
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
+
+#define DEBUG true
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
 #include <libff/algebra/fields/field_utils.hpp>
@@ -12,6 +14,7 @@
 #include <libsnark/gadgetlib1/gadgets/fields/fp3_gadgets.hpp>
 #include <libsnark/gadgetlib1/gadgets/fields/fp4_gadgets.hpp>
 #include <libsnark/gadgetlib1/gadgets/fields/fp6_gadgets.hpp>
+
 #include <libsnark/gadgetlib1/gadgets/verifiers/r1cs_ppzksnark_verifier_gadget.hpp>
 #include <libsnark/relations/constraint_satisfaction_problems/r1cs/examples/r1cs_examples.hpp>
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
@@ -28,17 +31,28 @@ using namespace std;
 
 //#define DEBUG_LOCAL
 
-template<typename FieldT>
-void dump_constraints(const protoboard<FieldT> &pb)
-{
-#ifdef DEBUG
+/*
+   template<typename FieldT>
+   void dump_constraints(const protoboard<FieldT> &pb)
+   {
+   #ifdef DEBUG
         for (auto s : pb.constraint_system.constraint_annotations)
         {
                 printf("constraint: %s\n", s.second.c_str());
         }
-#endif
-}
-
+   #endif
+   }*/
+/*
+   template<typename FieldT>
+   void dump_r1cs_constraint(const r1cs_constraint<FieldT> &constraint,
+                          const r1cs_variable_assignment<FieldT> &full_variable_assignment,
+                          const std::map<size_t, std::string> &variable_annotations)
+   {
+        printf("terms for a:\n"); constraint.a.print_with_assignment(full_variable_assignment, variable_annotations);
+        printf("terms for b:\n"); constraint.b.print_with_assignment(full_variable_assignment, variable_annotations);
+        printf("terms for c:\n"); constraint.c.print_with_assignment(full_variable_assignment, variable_annotations);
+   }
+ */
 template<typename ppT_A, typename ppT_B>
 protoboard< libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A> > &example, const std::string &annotation_A, const std::string &annotation_B)
 {
@@ -199,6 +213,9 @@ void add_offset(linear_combination<FieldT_B> &a, const size_t offset_0, const si
         for (size_t c=0; c< a.terms.size(); ++c)
         {
                 // [0] always represents 0 and is not included in primary_input
+                if (a.terms[c].index == 0) {
+                        continue;
+                }
                 if (a.terms[c].index <= boardline)
                 {
                         a.terms[c].index += offset_0;
@@ -225,9 +242,12 @@ template<typename ppT_A, typename ppT_B, typename FieldT_A, typename FieldT_B>
 r1cs_example<FieldT_B> merge_proof(const protoboard<FieldT_B> &pb_1, const protoboard<FieldT_B> &pb_2)
 {
         size_t offset_0 = 0;
-        size_t offset_1 = pb_1.primary_input().size();
-        size_t offset_2 = offset_1 + pb_2.primary_input().size();
-        size_t offset_3 = offset_2 + pb_1.auxiliary_input().size();
+//        size_t offset_1 = pb_2.primary_input().size();
+        size_t offset_1 = pb_2.auxiliary_input().size();
+//        size_t offset_2 = offset_1 + pb_2.primary_input().size();
+        size_t offset_2 = pb_1.primary_input().size();
+//        size_t offset_2 = 0;
+        size_t offset_3 = pb_1.primary_input().size() + pb_1.auxiliary_input().size();
 /*
         protoboard<FieldT_A> pb;
         pb_variable_array<FieldT_A> primary_input_bits;
@@ -236,17 +256,20 @@ r1cs_example<FieldT_B> merge_proof(const protoboard<FieldT_B> &pb_1, const proto
         pb_variable_array<FieldT_A> auxiliary_input_bits;
         auxiliary_input_bits.allocate(pb, pb_1.auxiliary_input().size() + pb_2.auxiliary_input().size(), "auxiliary_input");
  */
-//        r1cs_constraint_system<FieldT_B> cs_1 = add_offset_to_index<ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_1, offset_0, offset_2);
-//        r1cs_constraint_system<FieldT_B> cs_2 = add_offset_to_index<ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_2, offset_1, offset_3);
+        r1cs_constraint_system<FieldT_B> cs_1 = add_offset_to_index<ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_1, offset_0, offset_1);
+//        r1cs_constraint_system<FieldT_B> cs_2 = add_offset_to_index<ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_2, offset_2, offset_3);
 
-        r1cs_constraint_system<FieldT_B> cs(pb_1.get_constraint_system());
-        //cs.constraints.insert(cs.constraints.end(), cs_1.constraints.begin(), cs_1.constraints.end());
+        r1cs_constraint_system<FieldT_B> cs;
+        cs.constraints.insert(cs.constraints.end(), cs_1.constraints.begin(), cs_1.constraints.end());
         //cs.constraints.insert(cs.constraints.end(), cs_2.constraints.begin(), cs_2.constraints.end());
 
         //cs.primary_input_size = pb_1.primary_input().size() + pb_2.primary_input().size();
         //cs.auxiliary_input_size = pb_1.auxiliary_input().size() + pb_2.auxiliary_input().size();
         cs.primary_input_size = pb_1.primary_input().size() + pb_1.auxiliary_input().size();
         cs.auxiliary_input_size = pb_1.auxiliary_input().size(); //+ pb_2.auxiliary_input().size();
+
+        //cout<<pb_1.get_constraint_system()<<endl;
+        //cout<<cs<<endl;
 
 
         r1cs_primary_input<FieldT_B> primary_input_1(pb_1.primary_input());
@@ -260,9 +283,25 @@ r1cs_example<FieldT_B> merge_proof(const protoboard<FieldT_B> &pb_1, const proto
         new_primary_input.insert(new_primary_input.end(), auxiliary_input_1.begin(), auxiliary_input_1.end());
 
 
-        r1cs_primary_input<FieldT_B> new_auxiliary_input;
-        new_auxiliary_input.insert(new_auxiliary_input.end(), auxiliary_input_1.begin(), auxiliary_input_1.end());
+        r1cs_primary_input<FieldT_B> new_auxiliary_input(pb_1.auxiliary_input());
+//        new_auxiliary_input.insert(new_auxiliary_input.end(), auxiliary_input_1.begin(), auxiliary_input_1.end());
 //      new_auxiliary_input.insert(new_auxiliary_input.end(), auxiliary_input_2.begin(), auxiliary_input_2.end());
+
+        cout<<"Debug:"<<endl;
+        cout<<new_primary_input.size()<<' '<<new_auxiliary_input.size()<<endl;
+        cout<<cs.primary_input_size<<' '<<cs.auxiliary_input_size<<endl;
+        cout<<new_primary_input[542360]<<endl;
+        cout<<auxiliary_input_1[0]<<endl;
+        cout<<new_auxiliary_input[0]<<endl;
+
+        r1cs_variable_assignment<FieldT_B> full_variable_assignment = new_primary_input;
+        full_variable_assignment.insert(full_variable_assignment.end(), new_auxiliary_input.begin(), new_auxiliary_input.end());
+
+        cout<<full_variable_assignment[542360+1824650]<<endl;
+
+        dump_r1cs_constraint<FieldT_B>(cs.constraints[0], full_variable_assignment, cs.variable_annotations);
+
+
 
         r1cs_example<FieldT_B> example = r1cs_example<FieldT_B>(move(cs), move(new_primary_input), move(new_auxiliary_input));
         return example;
@@ -281,7 +320,7 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         //assert(example.primary_input.size() == primary_input_size);
         //r1cs_example<FieldT_A> example = gen_r1cs_example_from_protoboard<FieldT_A>(50);
 
-        r1cs_example<FieldT_A> new_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
+        r1cs_example<FieldT_A> new_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(2);
 
         // generate the verifier protoboard for the protoboard of the merkle tree instance
         //cerr<<new_example.constraint_system.auxiliary_input_size<<' '<<new_example.constraint_system.primary_input_size<<endl;
@@ -292,18 +331,19 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         protoboard<FieldT_B> pb_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B);
 
         cerr<<pb_1.is_satisfied()<<endl;
-        exit(0);
+//        exit(0);
 
         // try recursive proofs
 
         cerr<<"start second proof"<<endl;
 
-        r1cs_example<FieldT_A> another_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
+        r1cs_example<FieldT_A> another_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(2);
         protoboard<FieldT_B> pb_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B);
 
         // merge proof
         r1cs_example<FieldT_B> final_example = merge_proof< ppT_A, ppT_B, FieldT_A, FieldT_B>(pb_1, pb_2);
 
+        cerr<<"test final proof"<<endl;
         assert(final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input));
         cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
 /*
