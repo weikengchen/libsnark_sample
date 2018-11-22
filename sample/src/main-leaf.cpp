@@ -92,7 +92,6 @@ void test_leaf_gen(const std::string &annotation)
     stringstream pk_leaf;
     pk_leaf << keypair.pk;
     
-    ofstream fileOut;
     fileOut.open("pk_leaf");
     fileOut << pk_leaf.rdbuf();
     fileOut.close();
