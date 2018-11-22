@@ -79,7 +79,7 @@ void test_leaf(const std::string &annotation_A, const std::string &annotation_B)
 
     size_t vk_size_in_Fields;
     
-    r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16)
+    r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16);
         
     /*
 
