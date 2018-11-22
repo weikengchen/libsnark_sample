@@ -21,7 +21,7 @@ using namespace libsnark;
 using namespace std;
 
 
-void serialize_bit_vector_nonewline(std::ostream &out, const bit_vector &v)
+void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &v)
 {
     out << v.size() << "\n";
     for (size_t i = 0; i < v.size(); ++i)
