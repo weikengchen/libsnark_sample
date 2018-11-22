@@ -37,20 +37,20 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
     address_bits_va.allocate(pb, tree_depth, "address_bits");
     digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");
     digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");
-        
     merkle_authentication_path_variable<FieldT_A, HashT> prev_path_var(pb, tree_depth, "prev_path_var");
     merkle_authentication_path_variable<FieldT_A, HashT> next_path_var(pb, tree_depth, "next_path_var");
     
+    // load the Merkle tree gadget and generate the constraints
     merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
-
     prev_path_var.generate_r1cs_constraints();
     mls.generate_r1cs_constraints();
     
     const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 
+    // generate a key pair
     const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(constraint_system);
 
     return keypair;
@@ -71,16 +71,35 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
         const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<ppT_B>::size_in_bits(example.constraint_system.primary_input_size);
 }*/
 
-template<typename ppT_A, typename ppT_B, typename HashT_A>
-void test_leaf(const std::string &annotation_A, const std::string &annotation_B)
+template<typename ppT_A, typename HashT_A>
+void test_leaf_gen(const std::string &annotation)
 {
     typedef libff::Fr<ppT_A> FieldT_A;
-    typedef libff::Fr<ppT_B> FieldT_B;
 
-    size_t vk_size_in_Fields;
-    
+    // generate the key pair
     r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16);
-        
+    
+    // save the verifying key
+    stringstream vk_leaf;
+    vk_leaf << keypair.vk;
+    
+    ofstream fileOut;
+    fileOut.open("vk_leaf");
+    fileOut << vk_leaf.rdbuf();
+    fileOut.close();
+    
+    // save the proving key
+    stringstream pk_leaf;
+    pk_leaf << keypair.pk;
+    
+    ofstream fileOut;
+    fileOut.open("pk_leaf");
+    fileOut << pk_leaf.rdbuf();
+    fileOut.close();
+}
+
+
+    
     /*
 
     // generate two Merkle tree paths.
@@ -124,13 +143,11 @@ void test_leaf(const std::string &annotation_A, const std::string &annotation_B)
 
         cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
     */
-}
 
 int main(void)
 {
     libff::start_profiling();
     libff::mnt4_pp::init_public_params();
-    libff::mnt6_pp::init_public_params();
 
-	test_leaf< libff::mnt4_pp, libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4", "mnt6");
+	test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
 }
