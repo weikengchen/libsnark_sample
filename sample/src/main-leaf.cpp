@@ -161,7 +161,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     // save the root hash
     libff::bit_vector first_old_root = first_old_hash;
-    libff::bit_vector first_new_root = first_new_leaf;
+    libff::bit_vector first_new_root = first_new_hash;
     
     
     // =================================================================================================
@@ -181,6 +181,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // primary input
     digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");
     digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");
+    prev_root_digest.generate_r1cs_witness(first_old_root);
+    next_root_digest.generate_r1cs_witness(first_new_root);  
     input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());
     input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());
     
@@ -217,11 +219,6 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     mls.generate_r1cs_witness();
 
     unpack_input.generate_r1cs_witness_from_bits();
-    
-    // generate the witnesses for the rest
-    prev_root_digest.generate_r1cs_witness(first_old_root);
-    next_root_digest.generate_r1cs_witness(first_new_root);    
-    
     assert(pb.is_satisfied());
 
     const size_t num_constraints = pb.num_constraints();
