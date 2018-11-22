@@ -8,7 +8,6 @@
 #include <libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp>
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
 #include <libff/algebra/fields/field_utils.hpp>
-#include <libff/common/utils.hpp>
 
 #include <libsnark/gadgetlib1/gadgets/verifiers/r1cs_ppzksnark_verifier_gadget.hpp>
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
@@ -20,6 +19,16 @@
 
 using namespace libsnark;
 using namespace std;
+
+
+void serialize_bit_vector_nonewline(std::ostream &out, const bit_vector &v)
+{
+    out << v.size() << "\n";
+    for (size_t i = 0; i < v.size(); ++i)
+    {
+        out << v[i] << "";
+    }
+}
 
 #define LEAF_GADGET protoboard<FieldT_A> pb;\
     pb_variable_array<FieldT_A> input_as_field_elements;\
@@ -153,10 +162,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
     
-    libff::serialize_bit_vector(cout, first_old_root);
-    libff::serialize_bit_vector(cout, first_new_root);
-    libff::serialize_bit_vector(cout, first_old_leaf);
-    libff::serialize_bit_vector(cout, first_new_leaf);
+    serialize_bit_vector_nonewline(cout, first_old_root);
+    serialize_bit_vector_nonewline(cout, first_new_root);
+    serialize_bit_vector_nonewline(cout, first_old_leaf);
+    serialize_bit_vector_nonewline(cout, first_new_leaf);
     
     // declare the constraint system
     LEAF_GADGET
