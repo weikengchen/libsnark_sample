@@ -206,7 +206,9 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
         
     // =================================================================================================
 
-    assert(pb.is_satisfied());
+    if(!pb.is_satisfied()){
+        printf("The language is not accepted for proof 1.\n");
+    }
 
     const size_t num_constraints = pb.num_constraints();
     cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
@@ -268,7 +270,9 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     mls.generate_r1cs_witness();
     
     // generate the witnesses for the rest
-    assert(pb.is_satisfied());
+    if(!pb.is_satisfied()){
+        printf("The language is not accepted for proof 2.\n");
+    }
 
     auto proof_2 = r1cs_ppzksnark_prover<ppT_A>(pk, pb.primary_input(), pb.auxiliary_input());
     
@@ -286,6 +290,62 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
 }
+
+template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_verifier(const std::string &annotation) {
+    auto tree_depth = 16;
+
+    // read the verifying key
+    r1cs_ppzksnark_verification_key<ppT_A> vk;    
+    ifstream fileIn("vk_leaf");
+    stringstream verificationKeyFromFile;
+    if (fileIn) {
+       verificationKeyFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    verificationKeyFromFile >> vk;
+    
+    // read the proof 1
+    r1cs_ppzksnark_proof<ppT_A> proof_1;    
+    ifstream fileIn("proof_1");
+    stringstream proofFromFile;
+    if (fileIn) {
+       proofFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    proofFromFile >> proof_1;
+    
+    // read the input 1
+    r1cs_ppzksnark_primary_input<ppT_A> primary_input_1;    
+    ifstream fileIn("primary_input_1");
+    stringstream primaryInputFromFile;
+    if (fileIn) {
+       primaryInputFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    primaryInputFromFile >> primary_input_1;
+    
+    // read the proof 2
+    r1cs_ppzksnark_proof<ppT_A> proof_2;    
+    ifstream fileIn("proof_2");
+    if (fileIn) {
+       proofFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    proofFromFile >> proof_2;
+    
+    // read the input 2
+    r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;    
+    ifstream fileIn("primary_input_2");
+    if (fileIn) {
+       primaryInputFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    primaryInputFromFile >> primary_input_2;
+    
+    // check the proof 1
+    r1cs_gg_ppzksnark_verifier_strong_IC<ppT_A>(vk, )
+}
+
     /*
 
  
@@ -329,5 +389,5 @@ int main(void)
 
     //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
     test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
-    //test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
+    test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
 }
