@@ -41,9 +41,9 @@ using namespace std;
     address_bits_va.allocate(pb, tree_depth, "address_bits");\
     digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");\
     digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");\
-    merkle_authentication_path_variable<FieldT_A, HashT> prev_path_var(pb, tree_depth, "prev_path_var");\
-    merkle_authentication_path_variable<FieldT_A, HashT> next_path_var(pb, tree_depth, "next_path_var");\
-    merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,\
+    merkle_authentication_path_variable<FieldT_A, HashT_A> prev_path_var(pb, tree_depth, "prev_path_var");\
+    merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");\
+    merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,\
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,\
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
     unpack_input.generate_r1cs_constraints(true);\
