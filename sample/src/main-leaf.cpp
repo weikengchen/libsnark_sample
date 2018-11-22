@@ -271,7 +271,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     }
     
     // save the root hash
-    libff::bit_vector second_new_root = second_new_leaf;
+    libff::bit_vector second_new_root = second_new_hash;
+    
+    prev_root_digest.generate_r1cs_witness(second_old_root);
+    next_root_digest.generate_r1cs_witness(second_new_root);
     
     prev_leaf_digest.generate_r1cs_witness(second_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);
@@ -279,14 +282,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     // =================================================================================================
     
-    mls.generate_r1cs_witness();
-
     unpack_input.generate_r1cs_witness_from_bits();
+    mls.generate_r1cs_witness();
     
     // generate the witnesses for the rest
-    prev_root_digest.generate_r1cs_witness(second_old_root);
-    next_root_digest.generate_r1cs_witness(second_new_root);    
-    
     assert(pb.is_satisfied());
 
     auto proof_2 = r1cs_ppzksnark_prover<ppT_A>(pk, pb.primary_input(), pb.auxiliary_input());
@@ -346,7 +345,7 @@ int main(void)
     
      typedef libff::Fr<libff::mnt4_pp> FieldT_A;
 
-    test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
     test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
     //test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
 }
