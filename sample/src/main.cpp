@@ -30,32 +30,6 @@
 using namespace libsnark;
 using namespace std;
 
-//#define DEBUG_LOCAL
-
-/*
-   template<typename FieldT>
-   void dump_constraints(const protoboard<FieldT> &pb)
-   {
-   #ifdef DEBUG
-        for (auto s : pb.constraint_system.constraint_annotations)
-        {
-                printf("constraint: %s\n", s.second.c_str());
-        }
-   #endif
-   }*/
-/*
-   template<typename FieldT>
-   void dump_r1cs_constraint(const r1cs_constraint<FieldT> &constraint,
-                          const r1cs_variable_assignment<FieldT> &full_variable_assignment,
-                          const std::map<size_t, std::string> &variable_annotations)
-   {
-        printf("terms for a:\n"); constraint.a.print_with_assignment(full_variable_assignment, variable_annotations);
-        printf("terms for b:\n"); constraint.b.print_with_assignment(full_variable_assignment, variable_annotations);
-        printf("terms for c:\n"); constraint.c.print_with_assignment(full_variable_assignment, variable_annotations);
-   }
- */
-
-template<typename FieldT_A, typename FieldT_B>
 libff::bit_vector covert_input(const r1cs_primary_input<FieldT_A> &primary_input, const size_t elt_size)
 {
         libff::bit_vector input_as_bits;
@@ -240,14 +214,6 @@ r1cs_example<FieldT_A> get_MT_instance(const size_t tree_depth)
 
         r1cs_example<FieldT_A> new_example = r1cs_example<FieldT_A>(std::move(pb.get_constraint_system()), std::move(pb.primary_input()), std::move(pb.auxiliary_input()));
 
-#ifdef DEBUG_LOCAL
-        const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(new_example.constraint_system);
-        const r1cs_ppzksnark_proof<ppT_A> pi = r1cs_ppzksnark_prover<ppT_A>(keypair.pk, new_example.primary_input, new_example.auxiliary_input);
-        bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_A>(keypair.vk, new_example.primary_input, pi);
-        assert(bit);
-        cerr<<bit<<endl;
-#endif
-
         return new_example;
 }
 
@@ -371,7 +337,8 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
 
 
         size_t vk_size_in_Fields;
-        // generate the verifier protoboard for the protoboard of the merkle tree instance
+        
+	// generate the verifier protoboard for the protoboard of the merkle tree instance
         r1cs_example<FieldT_A> new_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
         r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B, vk_size_in_Fields);
 
@@ -402,30 +369,6 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         merge_inputs<FieldT_B>(final_example, 0, vk_size_in_Fields-1, primary_input_size_1, primary_input_size_1 + vk_size_in_Fields - 1);
 
         cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-
-/*
-        cerr<<final_example.primary_input.size()<<' '<<final_example.auxiliary_input.size()<<endl;
-        cerr<<final_example.constraint_system.num_constraints()<<endl;
-        const r1cs_ppzksnark_keypair<ppT_B> keypair = r1cs_ppzksnark_generator<ppT_B>(final_example.constraint_system);
-        const r1cs_ppzksnark_proof<ppT_B> pi = r1cs_ppzksnark_prover<ppT_B>(keypair.pk, final_example.primary_input, final_example.auxiliary_input);
-        bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_B>(keypair.vk, final_example.primary_input, pi);
-        assert(bit);
-        cerr<<bit<<endl;
-*/ 
-}
-
-template<typename ppT_A, typename ppT_B>
-void test_all_merkle_tree_gadgets()
-{
-        typedef libff::Fr<ppT_A> FieldT_A;
-        typedef libff::Fr<ppT_B> FieldT_B;
-
-        test_verifier< ppT_A, ppT_B, CRH_with_bit_out_gadget<FieldT_A>,  CRH_with_bit_out_gadget<FieldT_B> >("mnt4", "mnt6");
-//    test_merkle_tree_check_read_gadget<FieldT, CRH_with_bit_out_gadget<FieldT> >();
-//    test_merkle_tree_check_read_gadget<FieldT, sha256_two_to_one_hash_gadget<FieldT> >();
-
-//    test_merkle_tree_check_update_gadget<FieldT, CRH_with_bit_out_gadget<FieldT> >();
-//    test_merkle_tree_check_update_gadget<FieldT, sha256_two_to_one_hash_gadget<FieldT> >();
 }
 
 int main(void)
@@ -434,10 +377,11 @@ int main(void)
         libff::mnt4_pp::init_public_params();
         libff::mnt6_pp::init_public_params();
 
-        test_all_merkle_tree_gadgets<libff::mnt4_pp, libff::mnt6_pp>();
-//    test_verifier<libff::mnt4_pp, libff::mnt6_pp>("mnt4", "mnt6");
-//    test_verifier<libff::mnt6_pp, libff::mnt4_pp>("mnt6", "mnt4");
+	typedef libff::mnt4_pp ppT_A;
+	typedef libff::mnt6_pp ppT_B;
 
-//    test_hardcoded_verifier<libff::mnt4_pp, libff::mnt6_pp>("mnt4", "mnt6");
-//    test_hardcoded_verifier<libff::mnt6_pp, libff::mnt4_pp>("mnt6", "mnt4");
+	typedef libff::Fr<ppT_A> FieldT_A;
+	typedef libff::Fr<ppT_B> FieldT_B;
+
+	test_verifier< ppT_A, ppT_B, CRH_with_bit_out_gadget<FieldT_A> >("mnt4", "mnt6");
 }
