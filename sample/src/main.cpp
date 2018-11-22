@@ -88,20 +88,29 @@ r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT
         const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<ppT_B>::size_in_bits(example.constraint_system.primary_input_size);
 
         protoboard<FieldT_B> pb;
+
+	cerr<<"input size"<<endl;
+
         pb_variable_array<FieldT_B> vk_bits;
         vk_bits.allocate(pb, vk_size_in_bits, "vk_bits");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         pb_variable_array<FieldT_B> primary_input_bits;
         primary_input_bits.allocate(pb, primary_input_size_in_bits, "primary_input_bits");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         r1cs_ppzksnark_proof_variable<ppT_B> proof(pb, "proof");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         r1cs_ppzksnark_verification_key_variable<ppT_B> vk(pb, vk_bits, example.constraint_system.primary_input_size, "vk");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         pb_variable<FieldT_B> result;
         result.allocate(pb, "result");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         r1cs_ppzksnark_verifier_gadget<ppT_B> verifier(pb, vk, primary_input_bits, elt_size, proof, result, "verifier");
+	cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
 
         PROFILE_CONSTRAINTS(pb, "check that proofs lies on the curve")
         {
@@ -402,7 +411,7 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_B>(keypair.vk, final_example.primary_input, pi);
         assert(bit);
         cerr<<bit<<endl;
- */
+*/ 
 }
 
 template<typename ppT_A, typename ppT_B>
