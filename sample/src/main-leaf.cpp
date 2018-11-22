@@ -198,6 +198,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
+    unpack_inputs.generate_r1cs_constraints(true);
     prev_path_var.generate_r1cs_constraints();
     mls.generate_r1cs_constraints();
     
@@ -214,14 +215,74 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     mls.generate_r1cs_witness();
 
+    unpack_inputs.generate_r1cs_witness_from_bits();
+    
     // generate the witnesses for the rest
     prev_root_digest.generate_r1cs_witness(first_old_root);
-    next_root_digest.generate_r1cs_witness(first_new_root);
+    next_root_digest.generate_r1cs_witness(first_new_root);    
     
     assert(pb.is_satisfied());
 
     const size_t num_constraints = pb.num_constraints();
     cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
+    
+    auto proof_1 = r1cs_ppzksnark_prover<ppT_A>(pk, pb.primary_input(), pb.auxiliary_input());
+    
+    stringstream proofStream;
+    proofStream << *proof_1;
+
+    ofstream fileOut;
+    fileOut.open("proof_1");
+    fileOut << proofStream.rdbuf();
+    fileOut.close();
+    
+    auto primary_input_1 = pb.primary_input();
+    
+    
+    
+    
+    // now let us do the second proof
+    
+    // generate random leaf for before/after
+    libff::bit_vector first_old_leaf = first_new_hash;
+    
+    libff::bit_vector first_new_hash(digest_len);
+    std::generate(first_new_hash.begin(), first_new_hash.end(), [&]() { return std::rand() % 2; });
+    
+    libff::bit_vector first_new_leaf = first_new_hash;
+
+    libff::bit_vector address_bits;
+    size_t address = 0;
+    for (long level = tree_depth-1; level >= 0; --level) {
+        // sample a random address
+        const bool computed_is_right = (std::rand() % 2);
+        address |= (computed_is_right ? 1ul << (tree_depth-1-level) : 0);
+        address_bits.push_back(computed_is_right);
+        
+        // sample random values for other nodes
+        libff::bit_vector other(digest_len);
+        std::generate(other.begin(), other.end(), [&]() { return std::rand() % 2; });
+
+        // compute the upper layer's hash
+        libff::bit_vector old_block = first_old_hash;
+        old_block.insert(computed_is_right ? old_block.begin() : old_block.end(), other.begin(), other.end());
+        libff::bit_vector new_block = first_new_hash;
+        new_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
+        libff::bit_vector old_h = HashT_A::get_hash(old_block);
+        libff::bit_vector new_h = HashT_A::get_hash(new_block);
+
+        // save the neighborhood's hash
+        prev_path[level] = other;
+
+        first_old_hash = old_h;
+        first_new_hash = new_h;
+    }
+    
+    // save the root hash
+    libff::bit_vector first_old_root = first_old_hash;
+    libff::bit_vector first_new_root = first_new_hash;
+    
+    
 }
     /*
 
