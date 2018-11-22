@@ -177,6 +177,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // save the root hash
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
+    // add an error
+    first_new_root = first_new_leaf;
     
     serialize_bit_vector_nonewline(cout, first_old_root);
     serialize_bit_vector_nonewline(cout, first_new_root);
