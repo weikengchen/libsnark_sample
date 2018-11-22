@@ -198,7 +198,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
-    unpack_inputs.generate_r1cs_constraints(true);
+    unpack_input.generate_r1cs_constraints(true);
     prev_path_var.generate_r1cs_constraints();
     mls.generate_r1cs_constraints();
     
@@ -215,7 +215,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     mls.generate_r1cs_witness();
 
-    unpack_inputs.generate_r1cs_witness_from_bits();
+    unpack_input.generate_r1cs_witness_from_bits();
     
     // generate the witnesses for the rest
     prev_root_digest.generate_r1cs_witness(first_old_root);
