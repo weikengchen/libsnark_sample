@@ -256,7 +256,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     long address_bit_read_back_counter = 0;
     for (long level = tree_depth-1; level >= 0; --level) {
         // come back to the same address
-        const bool computed_is_right = address_bits[address_bit_read_back_counter];
+        const bool computed_is_right = address_bits[address_bit_read_back_counter++];
         
         // come back to the same other node
         libff::bit_vector other = prev_path[level];
