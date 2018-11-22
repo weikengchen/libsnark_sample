@@ -20,54 +20,35 @@
 using namespace libsnark;
 using namespace std;
 
-template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypair<ppT_A> leaf_setup(const size_t tree_depth, const std::string &annotation) {
-    const size_t digest_len = HashT::get_digest_len();
-    
-    protoboard<FieldT_A> pb;
-    pb_variable_array<FieldT_A> input_as_field_elements;
-    pb_variable_array<FieldT_A> input_as_bits;
-    
-    // primary input length in compressed elements
-    const size_t input_size_in_bits = digest_len * 2;
-    {
-        const size_t input_size_in_field_elements = libff::div_ceil(input_size_in_bits, FieldT_A::capacity());
-        input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");
-        pb.set_input_sizes(input_size_in_field_elements);
-    }
-    
-    // primary input
-    digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");
-    digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");
-    input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());
-    input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());
-    
-    assert(input_as_bits.size() == input_size_in_bits);
-    multipacking_gadget<FieldT_A> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_A::capacity(), FMT(annotation, " unpack_inputs"));
-    
-    // auxiliary input
-    pb_variable_array<FieldT_A> address_bits_va;
-    address_bits_va.allocate(pb, tree_depth, "address_bits");
-    digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");
-    digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");
-    merkle_authentication_path_variable<FieldT_A, HashT> prev_path_var(pb, tree_depth, "prev_path_var");
-    merkle_authentication_path_variable<FieldT_A, HashT> next_path_var(pb, tree_depth, "next_path_var");
-    
-    // load the Merkle tree gadget and generate the constraints
-    merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,
-                                                         prev_leaf_digest, prev_root_digest, prev_path_var,
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
-    unpack_input.generate_r1cs_constraints(true);
-    prev_path_var.generate_r1cs_constraints();
+#define LEAF_GADGET protoboard<FieldT_A> pb;\
+    pb_variable_array<FieldT_A> input_as_field_elements;\
+    pb_variable_array<FieldT_A> input_as_bits;\
+    \
+    const size_t input_size_in_bits = digest_len * 2;\
+    {\
+        const size_t input_size_in_field_elements = libff::div_ceil(input_size_in_bits, FieldT_A::capacity());\
+        input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");\
+        pb.set_input_sizes(input_size_in_field_elements);\
+    }\
+    \
+    digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");\
+    digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");\
+    input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());\
+    input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
+    assert(input_as_bits.size() == input_size_in_bits);\
+    multipacking_gadget<FieldT_A> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_A::capacity(), FMT(annotation, " unpack_inputs"));\
+    pb_variable_array<FieldT_A> address_bits_va;\
+    address_bits_va.allocate(pb, tree_depth, "address_bits");\
+    digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");\
+    digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");\
+    merkle_authentication_path_variable<FieldT_A, HashT> prev_path_var(pb, tree_depth, "prev_path_var");\
+    merkle_authentication_path_variable<FieldT_A, HashT> next_path_var(pb, tree_depth, "next_path_var");\
+    merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,\
+                                                         prev_leaf_digest, prev_root_digest, prev_path_var,\
+                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
+    unpack_input.generate_r1cs_constraints(true);\
+    prev_path_var.generate_r1cs_constraints();\
     mls.generate_r1cs_constraints();
-    
-    const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
-    cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
-
-    // generate a key pair
-    const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(constraint_system);
-
-    return keypair;
-}
 
 /*template<typename ppT_A, typename ppT_B> r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A> > &example, const std::string &annotation_A, const std::string &annotation_B, size_t &vk_size_in_Fields)
 {
@@ -85,10 +66,18 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
 
 template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
-
-    // generate the key pair
-    r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16, annotation);
     
+    const size_t digest_len = HashT::get_digest_len();
+    const size_t tree_depth = 16;
+    
+    LEAF_GADGET
+        
+    const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
+    cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
+
+    // generate a key pair
+    const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(constraint_system);
+
     // save the verifying key
     stringstream vk_leaf;
     vk_leaf << keypair.vk;
@@ -163,62 +152,27 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
     
-    
-    // =================================================================================================
-    
-    protoboard<FieldT_A> pb;
-    pb_variable_array<FieldT_A> input_as_field_elements;
-    pb_variable_array<FieldT_A> input_as_bits;
-    
-    // primary input length in compressed elements
-    const size_t input_size_in_bits = digest_len * 2;
-    {
-        const size_t input_size_in_field_elements = libff::div_ceil(input_size_in_bits, FieldT_A::capacity());
-        input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");
-        pb.set_input_sizes(input_size_in_field_elements);
-    }
-    
-    // primary input
-    digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");
-    digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");
-    prev_root_digest.generate_r1cs_witness(first_old_root);
-    next_root_digest.generate_r1cs_witness(first_new_root);  
-    input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());
-    input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());
-    
-    assert(input_as_bits.size() == input_size_in_bits);
-    multipacking_gadget<FieldT_A> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_A::capacity(), FMT(annotation, " unpack_inputs"));
-    
-    // auxiliary input
-    pb_variable_array<FieldT_A> address_bits_va;
-    address_bits_va.allocate(pb, tree_depth, "address_bits");
-    digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");
-    digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");
-    merkle_authentication_path_variable<FieldT_A, HashT_A> prev_path_var(pb, tree_depth, "prev_path_var");
-    merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");
-    
-    // load the Merkle tree gadget and generate the constraints
-    merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,
-                                                         prev_leaf_digest, prev_root_digest, prev_path_var,
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
-    unpack_input.generate_r1cs_constraints(true);
-    prev_path_var.generate_r1cs_constraints();
-    mls.generate_r1cs_constraints();
+    // declare the constraint system
+    LEAF_GADGET
     
     const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
     
-    // place the auxiliary input
+    // place the input
+    prev_root_digest.generate_r1cs_witness(first_old_root);
+    next_root_digest.generate_r1cs_witness(first_new_root);
+    
+    unpack_input.generate_r1cs_witness_from_bits();
+    
     address_bits_va.fill_with_bits(pb, address_bits);
     prev_leaf_digest.generate_r1cs_witness(first_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);    
     next_leaf_digest.generate_r1cs_witness(first_new_leaf);
     
-    // =================================================================================================
-    
     mls.generate_r1cs_witness();
+        
+    // =================================================================================================
 
-    unpack_input.generate_r1cs_witness_from_bits();
     assert(pb.is_satisfied());
 
     const size_t num_constraints = pb.num_constraints();
@@ -272,14 +226,12 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     prev_root_digest.generate_r1cs_witness(second_old_root);
     next_root_digest.generate_r1cs_witness(second_new_root);
+    unpack_input.generate_r1cs_witness_from_bits();
     
     prev_leaf_digest.generate_r1cs_witness(second_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);
     next_leaf_digest.generate_r1cs_witness(second_new_leaf);
-    
-    // =================================================================================================
-    
-    unpack_input.generate_r1cs_witness_from_bits();
+
     mls.generate_r1cs_witness();
     
     // generate the witnesses for the rest
@@ -342,7 +294,7 @@ int main(void)
     
      typedef libff::Fr<libff::mnt4_pp> FieldT_A;
 
-    //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
     test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
     //test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
 }
