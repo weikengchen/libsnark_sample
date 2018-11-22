@@ -55,7 +55,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
     // load the Merkle tree gadget and generate the constraints
     merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
+                                                         next_leaf_digest, next_root_digest, next_path_var, FieldT_A::one(), "mls");
     unpack_input.generate_r1cs_constraints(true);
     prev_path_var.generate_r1cs_constraints();
     mls.generate_r1cs_constraints();
@@ -198,7 +198,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // load the Merkle tree gadget and generate the constraints
     merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
+                                                         next_leaf_digest, next_root_digest, next_path_var, FieldT_A::one(), "mls");
     unpack_input.generate_r1cs_constraints(true);
     prev_path_var.generate_r1cs_constraints();
     mls.generate_r1cs_constraints();
