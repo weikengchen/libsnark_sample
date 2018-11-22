@@ -9,11 +9,6 @@
 #include <libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp>
 #include <libff/algebra/fields/field_utils.hpp>
 
-/*#include <libsnark/gadgetlib1/gadgets/fields/fp2_gadgets.hpp>
-#include <libsnark/gadgetlib1/gadgets/fields/fp3_gadgets.hpp>
-#include <libsnark/gadgetlib1/gadgets/fields/fp4_gadgets.hpp>
-#include <libsnark/gadgetlib1/gadgets/fields/fp6_gadgets.hpp>*/
-
 #include <libsnark/gadgetlib1/gadgets/verifiers/r1cs_ppzksnark_verifier_gadget.hpp>
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
 #include <libsnark/gadgetlib1/gadgets/merkle_tree/merkle_tree_check_update_gadget.hpp>
@@ -25,14 +20,29 @@
 using namespace libsnark;
 using namespace std;
 
-template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypair<ppT_A> leaf_setup(const size_t tree_depth) {
+template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypair<ppT_A> leaf_setup(const size_t tree_depth, const std::string &annotation) {
     const size_t digest_len = HashT::get_digest_len();
     
     protoboard<FieldT_A> pb;
+    pb_variable_array<FieldT_A> input_as_field_elements;
+    pb_variable_array<FieldT_A> input_as_bits;
+    
+    // primary input length in compressed elements
+    const size_t input_size_in_bits = digest_len * 2;
+    {
+        const size_t input_size_in_field_elements = div_ceil(input_size_in_bits, FieldT::capacity());
+        input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");
+        pb.set_input_sizes(input_size_in_field_elements);
+    }
     
     // primary input
     digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");
     digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");
+    input_as_bits.insert(input_as_bits.end(), prev_root_digest->bits.begin(), prev_root_digest->bits.end());
+    input_as_bits.insert(input_as_bits.end(), next_root_digest->bits.begin(), next_root_digest->bits.end());
+    
+    assert(input_as_bits.size() == input_size_in_bits);
+    multipacking_gadget<FieldT_A> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_A::capacity(), FMT(annotation, " unpack_inputs")));
     
     // auxiliary input
     pb_variable_array<FieldT_A> address_bits_va;
@@ -73,13 +83,11 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
         const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<ppT_B>::size_in_bits(example.constraint_system.primary_input_size);
 }*/
 
-template<typename ppT_A, typename HashT_A>
-void test_leaf_gen(const std::string &annotation)
-{
+template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
 
     // generate the key pair
-    r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16);
+    r1cs_ppzksnark_keypair<ppT_A> keypair = leaf_setup<ppT_A, FieldT_A, HashT_A>(16, annotation);
     
     // save the verifying key
     stringstream vk_leaf;
@@ -99,16 +107,105 @@ void test_leaf_gen(const std::string &annotation)
     fileOut.close();
 }
 
+/*template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
+    typedef libff::Fr<ppT_A> FieldT_A;
 
+    // read the proving key
+    r1cs_ppzksnark_proving_key<ppT_A> pk;    
+    ifstream fileIn("pk_leaf");
+    stringstream provingKeyFromFile;
+    if (fileIn) {
+       provingKeyFromFile << fileIn.rdbuf();
+       fileIn.close();
+    }
+    provingKeyFromFile >> pk;
     
+    // generate the first test example -- we will use the same path because no tree is materalized
+    const size_t digest_len = HashT::get_digest_len();
+    std::vector<merkle_authentication_node> prev_path(tree_depth);
+
+    // generate random leaf for before/after
+    libff::bit_vector first_old_hash(digest_len);
+    std::generate(first_old_hash.begin(), first_old_hash.end(), [&]() { return std::rand() % 2; });
+    libff::bit_vector first_new_hash(digest_len);
+    std::generate(first_new_hash.begin(), first_new_hash.end(), [&]() { return std::rand() % 2; });
+    libff::bit_vector first_old_leaf = first_old_hash;
+    libff::bit_vector first_new_leaf = first_new_hash;
+
+    libff::bit_vector address_bits;
+    size_t address = 0;
+    for (long level = tree_depth-1; level >= 0; --level) {
+        // sample a random address
+        const bool computed_is_right = (std::rand() % 2);
+        address |= (computed_is_right ? 1ul << (tree_depth-1-level) : 0);
+        address_bits.push_back(computed_is_right);
+        
+        // sample random values for other nodes
+        libff::bit_vector other(digest_len);
+        std::generate(other.begin(), other.end(), [&]() { return std::rand() % 2; });
+
+        // compute the upper layer's hash
+        libff::bit_vector old_block = first_old_hash;
+        load_block.insert(computed_is_right ? old_block.begin() : old_block.end(), other.begin(), other.end());
+        libff::bit_vector new_block = prev_store_hash;
+        store_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
+        libff::bit_vector old_h = HashT::get_hash(old_block);
+        libff::bit_vector new_h = HashT::get_hash(new_block);
+
+        // save the neighborhood's hash
+        prev_path[level] = other;
+
+        first_old_hash = old_h;
+        first_new_hash = new_h;
+    }
+    
+    // save the root hash
+    libff::bit_vector first_old_root = first_old_hash;
+    libff::bit_vector first_new_root = first_new_hash;
+    
+    
+    // place the auxiliary input -- address
+    address_bits_va.fill_with_bits(pb, address_bits);
+    
+    // place the auxiliary input -- leaf
+    digest_variable<FieldT> first_old_leaf_digest(pb, digest_len, "prev_leaf_digest");
+    first_old_leaf_digest.generate_r1cs_witness(first_old_leaf);
+    
+    prev_path_var.generate_r1cs_witness(address, prev_path);
+        next_leaf_digest.generate_r1cs_witness(stored_leaf);
+        address_bits_va.fill_with_bits(pb, address_bits);
+        mls.generate_r1cs_witness();
+
+        prev_leaf_digest.generate_r1cs_witness(loaded_leaf);
+        next_leaf_digest.generate_r1cs_witness(stored_leaf);
+        prev_root_digest.generate_r1cs_witness(load_root);
+        next_root_digest.generate_r1cs_witness(store_root);
+        address_bits_va.fill_with_bits(pb, address_bits);
+        assert(pb.is_satisfied());
+
+        pb.set_input_sizes(1+digest_len*4);
+
+        const size_t num_constraints = pb.num_constraints();
+        const size_t expected_constraints = merkle_tree_check_update_gadget<FieldT_A, HashT>::expected_constraints(tree_depth);
+        assert(num_constraints == expected_constraints);
+        cerr<<pb.is_satisfied()<<endl;
+        cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
+
+        r1cs_example<FieldT_A> new_example = r1cs_example<FieldT_A>(std::move(pb.get_constraint_system()), std::move(pb.primary_input()), std::move(pb.auxiliary_input()));
+
+        return new_example;
+    
+    protoboard<FieldT> pb;
+    l_gadget<FieldT> g(pb);
+    g.generate_r1cs_constraints();
+    g.generate_r1cs_witness(h1, h2, x, r1, r2);
+    
+}*/
     /*
 
     // generate two Merkle tree paths.
     r1cs_example<FieldT_A> MT_1 = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
     r1cs_example<FieldT_A> MT_2 = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
-    
-    // generate the verifying key for MT
-    assert(example.constraint_system.is_satisfied(example.primary_input, example.auxiliary_input));
     
     
     	// generate the verifier protoboard for the protoboard of the merkle tree instance
@@ -150,5 +247,6 @@ int main(void)
     libff::start_profiling();
     libff::mnt4_pp::init_public_params();
 
-	test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    //test_leaf_example< libff::mnt4_pp, CRH_with_bit_out_gadget<libff:Fr<libff::mnt4_pp>> >("mnt4");
 }
