@@ -259,7 +259,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
         const bool computed_is_right = address_bits[address_bit_read_back_counter++];
         
         // come back to the same other node
-        libff::bit_vector other(digest_len) = prev_path[level];
+        libff::bit_vector other = prev_path[level];
 
         // compute the upper layer's hash
         libff::bit_vector new_block = second_new_hash;
