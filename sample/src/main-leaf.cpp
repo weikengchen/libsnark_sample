@@ -152,10 +152,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
     
-    cout << "first_old_root: " << first_old_root << endl;
-    cout << "first_new_root: " << first_new_root << endl;
-    cout << "first_old_leaf: " << first_old_leaf << endl;
-    cout << "first_new_leaf: " << first_new_leaf << endl;
+    libff:serialize_bit_vector(cout, first_old_root);
+    libff:serialize_bit_vector(cout, first_new_root);
+    libff:serialize_bit_vector(cout, first_old_leaf);
+    libff:serialize_bit_vector(cout, first_new_leaf);
     
     // declare the constraint system
     LEAF_GADGET
@@ -171,7 +171,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     address_bits_va.fill_with_bits(pb, address_bits);
     prev_leaf_digest.generate_r1cs_witness(first_old_leaf);
-    prev_path_var.generate_r1cs_witness(address, prev_path);    
+    prev_path_var.generate_r1cs_witness(address, prev_path);
     next_leaf_digest.generate_r1cs_witness(first_new_leaf);
     
     mls.generate_r1cs_witness();
