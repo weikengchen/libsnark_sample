@@ -167,7 +167,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     address_bits_va.fill_with_bits(pb, address_bits);
     prev_leaf_digest.generate_r1cs_witness(first_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);    
-    next_leaf_digest.generate_r1cs_witness(first_new_leaf);
+    next_leaf_digest.generate_r1cs_witness(first_new_root);
     
     mls.generate_r1cs_witness();
         
@@ -292,9 +292,9 @@ int main(void)
     libff::start_profiling();
     libff::mnt4_pp::init_public_params();
     
-     typedef libff::Fr<libff::mnt4_pp> FieldT_A;
+    typedef libff::Fr<libff::mnt4_pp> FieldT_A;
 
-    test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
     test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
     //test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
 }
