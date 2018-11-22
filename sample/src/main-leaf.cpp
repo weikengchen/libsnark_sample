@@ -30,7 +30,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     }
 }
 
-#define LEAF_GADGET protoboard<FieldT_A> pb;\
+#define LEAF_GADGET_WITHPACKING protoboard<FieldT_A> pb;\
     pb_variable_array<FieldT_A> input_as_field_elements;\
     pb_variable_array<FieldT_A> input_as_bits;\
     \
@@ -57,6 +57,22 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,\
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
     unpack_input.generate_r1cs_constraints(true);\
+    prev_path_var.generate_r1cs_constraints();\
+    mls.generate_r1cs_constraints();
+
+#define LEAF_GADGET protoboard<FieldT_A> pb;\
+    pb.set_input_sizes(digest_len * 2);\
+    digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");\
+    digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");\
+    pb_variable_array<FieldT_A> address_bits_va;\
+    address_bits_va.allocate(pb, tree_depth, "address_bits");\
+    digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");\
+    digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");\
+    merkle_authentication_path_variable<FieldT_A, HashT_A> prev_path_var(pb, tree_depth, "prev_path_var");\
+    merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");\
+    merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,\
+                                                         prev_leaf_digest, prev_root_digest, prev_path_var,\
+                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
     prev_path_var.generate_r1cs_constraints();\
     mls.generate_r1cs_constraints();
 
@@ -177,7 +193,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     prev_root_digest.generate_r1cs_witness(first_old_root);
     next_root_digest.generate_r1cs_witness(first_new_root);
     
-    unpack_input.generate_r1cs_witness_from_bits();
+    //unpack_input.generate_r1cs_witness_from_bits();
     
     address_bits_va.fill_with_bits(pb, address_bits);
     prev_leaf_digest.generate_r1cs_witness(first_old_leaf);
@@ -241,7 +257,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     prev_root_digest.generate_r1cs_witness(second_old_root);
     next_root_digest.generate_r1cs_witness(second_new_root);
-    unpack_input.generate_r1cs_witness_from_bits();
+   // unpack_input.generate_r1cs_witness_from_bits();
     
     prev_leaf_digest.generate_r1cs_witness(second_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);
