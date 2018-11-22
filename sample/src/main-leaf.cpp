@@ -317,12 +317,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     // read the input 1
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1;    
     ifstream fileIn3("primary_input_1");
-    stringstream primaryInputFromFile;
     if (fileIn3) {
-       primaryInputFromFile << fileIn3.rdbuf();
+       primary_input_1 << fileIn3;
        fileIn3.close();
     }
-    primaryInputFromFile >> primary_input_1;
     
     // read the proof 2
     r1cs_ppzksnark_proof<ppT_A> proof_2;    
@@ -334,13 +332,12 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     proofFromFile >> proof_2;
     
     // read the input 2
-    r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;    
+    r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;
     ifstream fileIn5("primary_input_2");
     if (fileIn5) {
-       primaryInputFromFile << fileIn5.rdbuf();
+       primary_input_2<< fileIn5;
        fileIn5.close();
     }
-    primaryInputFromFile >> primary_input_2;
 }
 
     /*
