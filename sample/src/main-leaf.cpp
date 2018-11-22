@@ -229,7 +229,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     auto proof_1 = r1cs_ppzksnark_prover<ppT_A>(pk, pb.primary_input(), pb.auxiliary_input());
     
     stringstream proofStream;
-    proofStream << *proof_1;
+    proofStream << proof_1;
 
     ofstream fileOut;
     fileOut.open("proof_1");
@@ -239,7 +239,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     auto primary_input_1 = pb.primary_input();
     
     stringstream primaryinputStream;
-    primaryinputStream << *primary_input_1;
+    primaryinputStream << primary_input_1;
 
     fileOut.open("primary_input_1");
     fileOut << primaryinputStream.rdbuf();
