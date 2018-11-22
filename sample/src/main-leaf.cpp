@@ -108,6 +108,8 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
 
 template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
+    
+    auto tree_depth = 16;
 
     // read the proving key
     r1cs_ppzksnark_proving_key<ppT_A> pk;    
@@ -120,7 +122,7 @@ template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::str
     provingKeyFromFile >> pk;
     
     // generate the first test example -- we will use the same path because no tree is materalized
-    const size_t digest_len = HashT::get_digest_len();
+    const size_t digest_len = HashT_A::get_digest_len();
     std::vector<merkle_authentication_node> prev_path(tree_depth);
 
     // generate random leaf for before/after
@@ -145,9 +147,9 @@ template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::str
 
         // compute the upper layer's hash
         libff::bit_vector old_block = first_old_hash;
-        load_block.insert(computed_is_right ? old_block.begin() : old_block.end(), other.begin(), other.end());
-        libff::bit_vector new_block = prev_store_hash;
-        store_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
+        old_block.insert(computed_is_right ? old_block.begin() : old_block.end(), other.begin(), other.end());
+        libff::bit_vector new_block = first_new_hash;
+        new_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
         libff::bit_vector old_h = HashT_A::get_hash(old_block);
         libff::bit_vector new_h = HashT_A::get_hash(new_block);
 
@@ -164,8 +166,6 @@ template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::str
     
     
     // =================================================================================================
-    
-    const size_t digest_len = HashT::get_digest_len();
     
     protoboard<FieldT_A> pb;
     pb_variable_array<FieldT_A> input_as_field_elements;
@@ -193,11 +193,11 @@ template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::str
     address_bits_va.allocate(pb, tree_depth, "address_bits");
     digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");
     digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");
-    merkle_authentication_path_variable<FieldT_A, HashT> prev_path_var(pb, tree_depth, "prev_path_var");
-    merkle_authentication_path_variable<FieldT_A, HashT> next_path_var(pb, tree_depth, "next_path_var");
+    merkle_authentication_path_variable<FieldT_A, HashT_A> prev_path_var(pb, tree_depth, "prev_path_var");
+    merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");
     
     // load the Merkle tree gadget and generate the constraints
-    merkle_tree_check_update_gadget<FieldT_A, HashT> mls(pb, tree_depth, address_bits_va,
+    merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,
                                                          next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");
     prev_path_var.generate_r1cs_constraints();
