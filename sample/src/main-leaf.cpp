@@ -245,20 +245,70 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
     
-    
     // now let us do the second proof
+    libff::bit_vector second_old_leaf = first_new_leaf;
+    libff::bit_vector second_old_root = first_new_root;
+        
+    libff::bit_vector second_new_hash(digest_len);
+    std::generate(second_new_hash.begin(), second_new_hash.end(), [&]() { return std::rand() % 2; });
+    libff::bit_vector second_new_leaf = second_new_hash;
     
+    libff::bit_vector address_bits;
+    
+    long address_bit_read_back_counter = 0;
+    for (long level = tree_depth-1; level >= 0; --level) {
+        // come back to the same address
+        const bool computed_is_right = address_bits[address_bit_read_back_counter++];
+        
+        // come back to the same other node
+        libff::bit_vector other(digest_len) = prev_path[level]
+
+        // compute the upper layer's hash
+        libff::bit_vector new_block = second_new_hash;
+        new_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
+        libff::bit_vector new_h = HashT_A::get_hash(new_block);
+
+        second_new_hash = new_h;
+    }
+    
+    // save the root hash
+    libff::bit_vector second_new_root = second_new_hash;
+    
+    prev_leaf_digest.generate_r1cs_witness(second_old_leaf);
+    prev_path_var.generate_r1cs_witness(address, prev_path);    
+    next_leaf_digest.generate_r1cs_witness(second_new_leaf);
+    
+    // =================================================================================================
+    
+    mls.generate_r1cs_witness();
+
+    unpack_input.generate_r1cs_witness_from_bits();
+    
+    // generate the witnesses for the rest
+    prev_root_digest.generate_r1cs_witness(second_old_root);
+    next_root_digest.generate_r1cs_witness(second_new_root);    
+    
+    assert(pb.is_satisfied());
+
+    auto proof_2 = r1cs_ppzksnark_prover<ppT_A>(pk, pb.primary_input(), pb.auxiliary_input());
+    
+    proofStream << proof_2;
+
+    fileOut.open("proof_2");
+    fileOut << proofStream.rdbuf();
+    fileOut.close();
+    
+    auto primary_input_2 = pb.primary_input();
+    
+    primaryinputStream << primary_input_2;
+
+    fileOut.open("primary_input_2");
+    fileOut << primaryinputStream.rdbuf();
+    fileOut.close();
 }
     /*
 
-    // generate two Merkle tree paths.
-    r1cs_example<FieldT_A> MT_1 = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
-    r1cs_example<FieldT_A> MT_2 = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
-    
-    
-    	// generate the verifier protoboard for the protoboard of the merkle tree instance
-
-    
+ 
     r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B, vk_size_in_Fields);
 
         // try recursive proofs
