@@ -334,8 +334,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
        fileIn5.close();
     }
 	
-	bool res_1 = r1cs_ppzksnark_verifier_strong_IC<ppzksnark_ppT>(vk, primary_input_1, proof_1);
-	bool res_2 = r1cs_ppzksnark_verifier_strong_IC<ppzksnark_ppT>(vk, primary_input_2, proof_2);
+	bool res_1 = r1cs_ppzksnark_verifier_strong_IC<ppT_A>(vk, primary_input_1, proof_1);
+	bool res_2 = r1cs_ppzksnark_verifier_strong_IC<ppT_A>(vk, primary_input_2, proof_2);
 	
 	if(res_1 == false){
 		printf("proof 1 is invalid.\n");
