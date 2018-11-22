@@ -68,7 +68,7 @@ libff::bit_vector covert_input(const r1cs_primary_input<FieldT_A> &primary_input
 }
 
 template<typename ppT_A, typename ppT_B>
-r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A> > &example, const std::string &annotation_A, const std::string &annotation_B)
+r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A> > &example, const std::string &annotation_A, const std::string &annotation_B, size_t &vk_size_in_Fields)
 {
         typedef libff::Fr<ppT_A> FieldT_A;
         typedef libff::Fr<ppT_B> FieldT_B;
@@ -120,6 +120,8 @@ r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT
 
         cerr<<"divide: "<<vk_size_in_bits % elt_size <<endl;
         pb.set_input_sizes(vk_size_in_bits / elt_size + example.constraint_system.primary_input_size);
+        vk_size_in_Fields = vk_size_in_bits / elt_size;
+
         //cerr<<pb.num_inputs()<<' '<<vk_size_in_bits / elt_size + example.constraint_system.primary_input_size<<endl;
 
         printf("positive test:\n");
@@ -272,8 +274,9 @@ r1cs_constraint_system<FieldT_B> add_offset_to_index(const r1cs_example<FieldT_B
 }
 
 template<typename ppT_A, typename ppT_B, typename FieldT_A, typename FieldT_B>
-r1cs_example<FieldT_B> merge_proof(const r1cs_example<FieldT_B> &pb_1, const r1cs_example<FieldT_B> &pb_2)
+r1cs_example<FieldT_B> merge_verifier(const r1cs_example<FieldT_B> &pb_1, const r1cs_example<FieldT_B> &pb_2)
 {
+        cerr<<"start merge_verifier"<<endl;
         size_t offset_0 = 0;
         size_t offset_1 = pb_2.primary_input.size();
         size_t offset_2 = pb_1.primary_input.size();
@@ -318,20 +321,55 @@ r1cs_example<FieldT_B> merge_proof(const r1cs_example<FieldT_B> &pb_1, const r1c
         return example;
 }
 
+template<typename FieldT_B>
+void merge_index(linear_combination<FieldT_B> &a, const size_t l1, const size_t r1, const size_t l2, const size_t r2)
+{
+        for (size_t c=0; c< a.terms.size(); ++c)
+        {
+                // [0] always represents 0 and is not included in primary_input
+                if (a.terms[c].index < l2) {
+                        continue;
+                }
+                else if (a.terms[c].index <= r2) {
+                        a.terms[c].index = l1 + (a.terms[c].index - l2);
+                }
+                else {
+                        a.terms[c].index -= (r2-l2+1);
+                }
+        }
+}
+
+template<typename FieldT_B>
+void merge_inputs(r1cs_example<FieldT_B> &ex, size_t l1, size_t r1, size_t l2, size_t r2)
+{
+        for (size_t c = 0; c < ex.constraint_system.constraints.size(); ++c)
+        {
+                merge_index<FieldT_B>(ex.constraint_system.constraints[c].a, l1, r1, l2, r2);
+                merge_index<FieldT_B>(ex.constraint_system.constraints[c].b, l1, r1, l2, r2);
+                merge_index<FieldT_B>(ex.constraint_system.constraints[c].c, l1, r1, l2, r2);
+        }
+        r1cs_primary_input<FieldT_B> tmp(ex.primary_input);
+        ex.primary_input.clear();
+        ex.primary_input.insert(ex.primary_input.end(), tmp.begin(), tmp.begin()+l2);
+        ex.primary_input.insert(ex.primary_input.end(), tmp.begin()+r2+1, tmp.end());
+}
+
 template<typename ppT_A, typename ppT_B, typename HashT_A, typename HashT_B>
 void test_verifier(const std::string &annotation_A, const std::string &annotation_B)
 {
         typedef libff::Fr<ppT_A> FieldT_A;
         typedef libff::Fr<ppT_B> FieldT_B;
 
+
+        size_t vk_size_in_Fields;
         // generate the verifier protoboard for the protoboard of the merkle tree instance
         r1cs_example<FieldT_A> new_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
-        r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B);
+        r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B, vk_size_in_Fields);
 
         // try recursive proofs
         cerr<<"start second proof"<<endl;
         r1cs_example<FieldT_A> another_example = get_MT_instance<ppT_A, FieldT_A, HashT_A>(16);
-        r1cs_example<FieldT_B> verifier_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B);
+        r1cs_example<FieldT_B> verifier_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B, vk_size_in_Fields);
         verifier_2.constraint_system = verifier_1.constraint_system;
         //protoboard<FieldT_B> pb_2(pb_1.get_constraint_system, another_example.primary_input, another_example.auxiliary_input);
 
@@ -341,11 +379,21 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         //exit(0);
 
         // merge proof
-        r1cs_example<FieldT_B> final_example = merge_proof< ppT_A, ppT_B, FieldT_A, FieldT_B>(verifier_1, verifier_2);
+        r1cs_example<FieldT_B> final_example = merge_verifier< ppT_A, ppT_B, FieldT_A, FieldT_B>(verifier_1, verifier_2);
 
         cerr<<"test final proof"<<endl;
         assert(final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input));
         cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
+
+        size_t primary_input_size_1 = verifier_1.primary_input.size();
+        size_t digest_len = HashT_B::get_digest_len();
+        cerr<<HashT_A::get_digest_len() << ' '<<HashT_B::get_digest_len()<<endl;
+        assert(HashT_A::get_digest_len() ==  HashT_B::get_digest_len());
+        merge_inputs<FieldT_B>(final_example, vk_size_in_Fields + 1 + digest_len*2, vk_size_in_Fields + 1 + digest_len*4, primary_input_size_1 + vk_size_in_Fields + 1, primary_input_size_1 + vk_size_in_Fields + 1 + digest_len*2);
+        merge_inputs<FieldT_B>(final_example, 0, vk_size_in_Fields-1, primary_input_size_1, primary_input_size_1 + vk_size_in_Fields - 1);
+
+        cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
+
 /*
         cerr<<final_example.primary_input.size()<<' '<<final_example.auxiliary_input.size()<<endl;
         cerr<<final_example.constraint_system.num_constraints()<<endl;
@@ -353,10 +401,8 @@ void test_verifier(const std::string &annotation_A, const std::string &annotatio
         const r1cs_ppzksnark_proof<ppT_B> pi = r1cs_ppzksnark_prover<ppT_B>(keypair.pk, final_example.primary_input, final_example.auxiliary_input);
         bool bit = r1cs_ppzksnark_verifier_strong_IC<ppT_B>(keypair.vk, final_example.primary_input, pi);
         assert(bit);
-        cerr<<bit<<endl;*/
-
-
-
+        cerr<<bit<<endl;
+ */
 }
 
 template<typename ppT_A, typename ppT_B>
