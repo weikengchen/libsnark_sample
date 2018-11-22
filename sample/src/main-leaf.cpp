@@ -318,8 +318,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1;    
     ifstream fileIn3("primary_input_1");
     if (fileIn3) {
-       primary_input_1 << fileIn3;
-       fileIn3.close();
+        fileIn3 >> primary_input_1;
+        fileIn3.close();
     }
     
     // read the proof 2
@@ -335,7 +335,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;
     ifstream fileIn5("primary_input_2");
     if (fileIn5) {
-       primary_input_2<< fileIn5;
+       fileIn5 >> primary_input_2;
        fileIn5.close();
     }
 }
