@@ -19,6 +19,8 @@
 #include <libsnark/gadgetlib1/gadgets/merkle_tree/merkle_tree_check_update_gadget.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 using namespace libsnark;
 using namespace std;
