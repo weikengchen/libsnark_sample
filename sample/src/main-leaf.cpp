@@ -180,11 +180,6 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // add an error
     first_new_root = first_new_leaf;
     
-    serialize_bit_vector_nonewline(cout, first_old_root);
-    serialize_bit_vector_nonewline(cout, first_new_root);
-    serialize_bit_vector_nonewline(cout, first_old_leaf);
-    serialize_bit_vector_nonewline(cout, first_new_leaf);
-    
     // declare the constraint system
     LEAF_GADGET
     
@@ -338,6 +333,21 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
        fileIn5 >> primary_input_2;
        fileIn5.close();
     }
+	
+	bool res_1 = r1cs_ppzksnark_verifier_strong_IC<ppzksnark_ppT>(vk, primary_input_1, proof_1);
+	bool res_2 = r1cs_ppzksnark_verifier_strong_IC<ppzksnark_ppT>(vk, primary_input_2, proof_2);
+	
+	if(res_1 == false){
+		printf("proof 1 is invalid.\n");
+	}else{
+		printf("proof 1 is valid.\n");
+	}
+	
+	if(res_2 == false){
+		printf("proof 2 is invalid.\n");
+	}else{
+		printf("proof 2 is valid.\n");
+	}
 }
 
     /*
