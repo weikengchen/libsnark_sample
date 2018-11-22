@@ -67,7 +67,7 @@ using namespace std;
 template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
     
-    const size_t digest_len = HashT::get_digest_len();
+    const size_t digest_len = HashT_A::get_digest_len();
     const size_t tree_depth = 16;
     
     LEAF_GADGET
