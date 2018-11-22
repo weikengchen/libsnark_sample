@@ -30,7 +30,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     }
 }
 
-#define LEAF_GADGET_WITHPACKING protoboard<FieldT_A> pb;\
+#define LEAF_GADGET protoboard<FieldT_A> pb;\
     pb_variable_array<FieldT_A> input_as_field_elements;\
     pb_variable_array<FieldT_A> input_as_bits;\
     \
@@ -60,7 +60,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     prev_path_var.generate_r1cs_constraints();\
     mls.generate_r1cs_constraints();
 
-#define LEAF_GADGET protoboard<FieldT_A> pb;\
+#define LEAF_GADGET_NOPACKING protoboard<FieldT_A> pb;\
     pb.set_input_sizes(digest_len * 2);\
     digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");\
     digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");\
@@ -177,8 +177,6 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // save the root hash
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
-    // add an error
-    first_new_root = first_new_leaf;
     
     // declare the constraint system
     LEAF_GADGET
@@ -190,7 +188,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     prev_root_digest.generate_r1cs_witness(first_old_root);
     next_root_digest.generate_r1cs_witness(first_new_root);
     
-    //unpack_input.generate_r1cs_witness_from_bits();
+    unpack_input.generate_r1cs_witness_from_bits();
     
     address_bits_va.fill_with_bits(pb, address_bits);
     prev_leaf_digest.generate_r1cs_witness(first_old_leaf);
@@ -256,7 +254,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     prev_root_digest.generate_r1cs_witness(second_old_root);
     next_root_digest.generate_r1cs_witness(second_new_root);
-   // unpack_input.generate_r1cs_witness_from_bits();
+   	unpack_input.generate_r1cs_witness_from_bits();
     
     prev_leaf_digest.generate_r1cs_witness(second_old_leaf);
     prev_path_var.generate_r1cs_witness(address, prev_path);
