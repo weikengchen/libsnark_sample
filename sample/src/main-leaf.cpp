@@ -238,50 +238,15 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     auto primary_input_1 = pb.primary_input();
     
-    
+    stringstream primaryinputStream;
+    primaryinputStream << *primary_input_1;
+
+    fileOut.open("primary_input_1");
+    fileOut << primaryinputStream.rdbuf();
+    fileOut.close();
     
     
     // now let us do the second proof
-    
-    // generate random leaf for before/after
-    libff::bit_vector first_old_leaf = first_new_hash;
-    
-    libff::bit_vector first_new_hash(digest_len);
-    std::generate(first_new_hash.begin(), first_new_hash.end(), [&]() { return std::rand() % 2; });
-    
-    libff::bit_vector first_new_leaf = first_new_hash;
-
-    libff::bit_vector address_bits;
-    size_t address = 0;
-    for (long level = tree_depth-1; level >= 0; --level) {
-        // sample a random address
-        const bool computed_is_right = (std::rand() % 2);
-        address |= (computed_is_right ? 1ul << (tree_depth-1-level) : 0);
-        address_bits.push_back(computed_is_right);
-        
-        // sample random values for other nodes
-        libff::bit_vector other(digest_len);
-        std::generate(other.begin(), other.end(), [&]() { return std::rand() % 2; });
-
-        // compute the upper layer's hash
-        libff::bit_vector old_block = first_old_hash;
-        old_block.insert(computed_is_right ? old_block.begin() : old_block.end(), other.begin(), other.end());
-        libff::bit_vector new_block = first_new_hash;
-        new_block.insert(computed_is_right ? new_block.begin() : new_block.end(), other.begin(), other.end());
-        libff::bit_vector old_h = HashT_A::get_hash(old_block);
-        libff::bit_vector new_h = HashT_A::get_hash(new_block);
-
-        // save the neighborhood's hash
-        prev_path[level] = other;
-
-        first_old_hash = old_h;
-        first_new_hash = new_h;
-    }
-    
-    // save the root hash
-    libff::bit_vector first_old_root = first_old_hash;
-    libff::bit_vector first_new_root = first_new_hash;
-    
     
 }
     /*
