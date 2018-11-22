@@ -106,9 +106,7 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
     fileOut.close();
 }
 
-template<typename ppT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
-    typedef libff::Fr<ppT_A> FieldT_A;
-    
+template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
     auto tree_depth = 16;
 
     // read the proving key
@@ -272,5 +270,5 @@ int main(void)
     libff::mnt4_pp::init_public_params();
 
     //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
-    test_leaf_example<libff::mnt4_pp, CRH_with_bit_out_gadget<libff:Fr<libff::mnt4_pp>>>("mnt4");
+    test_leaf_example<libff::mnt4_pp, libff::Fr<libff::mnt4_pp>, CRH_with_bit_out_gadget<libff:Fr<libff::mnt4_pp>>>("mnt4");
 }
