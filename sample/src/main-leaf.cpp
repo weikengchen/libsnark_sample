@@ -24,12 +24,26 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
     const size_t digest_len = HashT::get_digest_len();
     
     protoboard<FieldT_A> pb;
+    pb_variable_array<FieldT_A> input_as_field_elements;
+    pb_variable_array<FieldT_A> input_as_bits;
+    
+    // primary input length in compressed elements
+    const size_t input_size_in_bits = digest_len * 2;
+    {
+        printf("%d %d\n", input_size_in_bits, FieldT_A::capacity());
+        const size_t input_size_in_field_elements = libff::div_ceil(input_size_in_bits, FieldT_A::capacity());
+        input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");
+        pb.set_input_sizes(input_size_in_field_elements);
+    }
     
     // primary input
     digest_variable<FieldT_A> prev_root_digest(pb, digest_len, "prev_root_digest");
     digest_variable<FieldT_A> next_root_digest(pb, digest_len, "next_root_digest");
+    input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());
+    input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());
     
-    pb.set_input_sizes(digest_len * 2);
+    assert(input_as_bits.size() == input_size_in_bits);
+    multipacking_gadget<FieldT_A> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_A::capacity(), FMT(annotation, " unpack_inputs"));
     
     // auxiliary input
     pb_variable_array<FieldT_A> address_bits_va;
