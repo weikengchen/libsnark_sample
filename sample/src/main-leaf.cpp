@@ -268,7 +268,9 @@ int main(void)
 {
     libff::start_profiling();
     libff::mnt4_pp::init_public_params();
+    
+     typedef libff::Fr<ppT> FieldT;
 
-    test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
-    //test_leaf_example<libff::mnt4_pp, libff::Fr<libff::mnt4_pp>, CRH_with_bit_out_gadget<libff:Fr<libff::mnt4_pp>>>("mnt4");
+    //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
+    test_leaf_example<libff::mnt4_pp, libff::Fr<libff::mnt4_pp>, CRH_with_bit_out_gadget< libff::Fr<libff::mnt4_pp> > >("mnt4");
 }
