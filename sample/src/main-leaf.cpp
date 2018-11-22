@@ -296,54 +296,51 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
 
     // read the verifying key
     r1cs_ppzksnark_verification_key<ppT_A> vk;    
-    ifstream fileIn("vk_leaf");
+    ifstream fileIn1("vk_leaf");
     stringstream verificationKeyFromFile;
-    if (fileIn) {
-       verificationKeyFromFile << fileIn.rdbuf();
-       fileIn.close();
+    if (fileIn1) {
+       verificationKeyFromFile << fileIn1.rdbuf();
+       fileIn1.close();
     }
     verificationKeyFromFile >> vk;
     
     // read the proof 1
     r1cs_ppzksnark_proof<ppT_A> proof_1;    
-    ifstream fileIn("proof_1");
+    ifstream fileIn2("proof_1");
     stringstream proofFromFile;
-    if (fileIn) {
-       proofFromFile << fileIn.rdbuf();
-       fileIn.close();
+    if (fileIn2) {
+       proofFromFile << fileIn2.rdbuf();
+       fileIn2.close();
     }
     proofFromFile >> proof_1;
     
     // read the input 1
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1;    
-    ifstream fileIn("primary_input_1");
+    ifstream fileIn3("primary_input_1");
     stringstream primaryInputFromFile;
-    if (fileIn) {
-       primaryInputFromFile << fileIn.rdbuf();
-       fileIn.close();
+    if (fileIn3) {
+       primaryInputFromFile << fileIn3.rdbuf();
+       fileIn3.close();
     }
     primaryInputFromFile >> primary_input_1;
     
     // read the proof 2
     r1cs_ppzksnark_proof<ppT_A> proof_2;    
-    ifstream fileIn("proof_2");
-    if (fileIn) {
-       proofFromFile << fileIn.rdbuf();
-       fileIn.close();
+    ifstream fileIn4("proof_2");
+    if (fileIn4) {
+       proofFromFile << fileIn4.rdbuf();
+       fileIn4.close();
     }
     proofFromFile >> proof_2;
     
     // read the input 2
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;    
-    ifstream fileIn("primary_input_2");
-    if (fileIn) {
-       primaryInputFromFile << fileIn.rdbuf();
-       fileIn.close();
+    ifstream fileIn5("primary_input_2");
+    if (fileIn5) {
+       primaryInputFromFile << fileIn5.rdbuf();
+       fileIn5.close();
     }
     primaryInputFromFile >> primary_input_2;
-    
-    // check the proof 1
-    r1cs_gg_ppzksnark_verifier_strong_IC<ppT_A>(vk, )
 }
 
     /*
