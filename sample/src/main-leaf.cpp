@@ -253,15 +253,13 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     std::generate(second_new_hash.begin(), second_new_hash.end(), [&]() { return std::rand() % 2; });
     libff::bit_vector second_new_leaf = second_new_hash;
     
-    libff::bit_vector address_bits;
-    
     long address_bit_read_back_counter = 0;
     for (long level = tree_depth-1; level >= 0; --level) {
         // come back to the same address
         const bool computed_is_right = address_bits[address_bit_read_back_counter++];
         
         // come back to the same other node
-        libff::bit_vector other(digest_len) = prev_path[level]
+        libff::bit_vector other(digest_len) = prev_path[level];
 
         // compute the upper layer's hash
         libff::bit_vector new_block = second_new_hash;
