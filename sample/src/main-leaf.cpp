@@ -51,7 +51,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT> r1cs_ppzksnark_keypa
     const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 
-    const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(example.constraint_system);
+    const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(constraint_system);
 
     return keypair;
 }
