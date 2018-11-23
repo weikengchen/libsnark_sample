@@ -76,20 +76,6 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     prev_path_var.generate_r1cs_constraints();\
     mls.generate_r1cs_constraints();
 
-/*template<typename ppT_A, typename ppT_B> r1cs_example<libff::Fr<ppT_B> > test_verifier_B(const r1cs_example<libff::Fr<ppT_A> > &example, const std::string &annotation_A, const std::string &annotation_B, size_t &vk_size_in_Fields)
-{
-        typedef libff::Fr<ppT_A> FieldT_A;
-        typedef libff::Fr<ppT_B> FieldT_B;
-
-        assert(example.constraint_system.is_satisfied(example.primary_input, example.auxiliary_input));
-       
-        const r1cs_ppzksnark_proof<ppT_A> pi = r1cs_ppzksnark_prover<ppT_A>(keypair.pk, example.primary_input, example.auxiliary_input);
-
-        const size_t elt_size = FieldT_A::size_in_bits();
-        const size_t primary_input_size_in_bits = elt_size * example.constraint_system.primary_input_size;
-        const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<ppT_B>::size_in_bits(example.constraint_system.primary_input_size);
-}*/
-
 template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
     
@@ -109,7 +95,7 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
     vk_leaf << keypair.vk;
     
     ofstream fileOut;
-    fileOut.open("vk_leaf");
+    fileOut.open("vk_packed_leaf");
     fileOut << vk_leaf.rdbuf();
     fileOut.close();
     
@@ -117,7 +103,7 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
     stringstream pk_leaf;
     pk_leaf << keypair.pk;
     
-    fileOut.open("pk_leaf");
+    fileOut.open("pk_packed_leaf");
     fileOut << pk_leaf.rdbuf();
     fileOut.close();
 }
@@ -127,7 +113,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
 
     // read the proving key
     r1cs_ppzksnark_proving_key<ppT_A> pk;    
-    ifstream fileIn("pk_leaf");
+    ifstream fileIn("pk_packed_leaf");
     stringstream provingKeyFromFile;
     if (fileIn) {
        provingKeyFromFile << fileIn.rdbuf();
@@ -212,7 +198,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     proofStream << proof_1;
 
     ofstream fileOut;
-    fileOut.open("proof_1");
+    fileOut.open("proof_packed_1");
     fileOut << proofStream.rdbuf();
     fileOut.close();
     
@@ -221,7 +207,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     stringstream primaryinputStream;
     primaryinputStream << primary_input_1;
 
-    fileOut.open("primary_input_1");
+    fileOut.open("primary_input_packed_1");
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
     
@@ -271,7 +257,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     proofStream << proof_2;
 
-    fileOut.open("proof_2");
+    fileOut.open("proof_packed_2");
     fileOut << proofStream.rdbuf();
     fileOut.close();
     
@@ -279,17 +265,17 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     
     primaryinputStream << primary_input_2;
 
-    fileOut.open("primary_input_2");
+    fileOut.open("primary_input_packed_2");
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
 }
 
-template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_verifier(const std::string &annotation) {
+template<typename ppT_A> void test_leaf_verifier(const std::string &annotation) {
     auto tree_depth = 16;
 
     // read the verifying key
     r1cs_ppzksnark_verification_key<ppT_A> vk;    
-    ifstream fileIn1("vk_leaf");
+    ifstream fileIn1("vk_packed_leaf");
     stringstream verificationKeyFromFile;
     if (fileIn1) {
        verificationKeyFromFile << fileIn1.rdbuf();
@@ -299,7 +285,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     
     // read the proof 1
     r1cs_ppzksnark_proof<ppT_A> proof_1;    
-    ifstream fileIn2("proof_1");
+    ifstream fileIn2("proof_packed_1");
     stringstream proofFromFile;
     if (fileIn2) {
        proofFromFile << fileIn2.rdbuf();
@@ -309,7 +295,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     
     // read the input 1
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1;    
-    ifstream fileIn3("primary_input_1");
+    ifstream fileIn3("primary_input_packed_1");
     if (fileIn3) {
         fileIn3 >> primary_input_1;
         fileIn3.close();
@@ -317,7 +303,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     
     // read the proof 2
     r1cs_ppzksnark_proof<ppT_A> proof_2;    
-    ifstream fileIn4("proof_2");
+    ifstream fileIn4("proof_packed_2");
     if (fileIn4) {
        proofFromFile << fileIn4.rdbuf();
        fileIn4.close();
@@ -326,7 +312,7 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
     
     // read the input 2
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2;
-    ifstream fileIn5("primary_input_2");
+    ifstream fileIn5("primary_input_packed_2");
     if (fileIn5) {
        fileIn5 >> primary_input_2;
        fileIn5.close();
@@ -348,40 +334,6 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
 	}
 }
 
-    /*
-
- 
-    r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B, vk_size_in_Fields);
-
-        // try recursive proofs
-        cerr<<"start second proof"<<endl;
-        
-        r1cs_example<FieldT_B> verifier_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B, vk_size_in_Fields);
-        verifier_2.constraint_system = verifier_1.constraint_system;
-        //protoboard<FieldT_B> pb_2(pb_1.get_constraint_system, another_example.primary_input, another_example.auxiliary_input);
-
-
-        //r1cs_example<FieldT_B> cs(pb_1.get_constraint_system(), pb_2.primary_input(), pb_2.auxiliary_input());
-        //cerr<<cs.constraint_system.is_satisfied(cs.primary_input, cs.auxiliary_input)<<endl;
-        //exit(0);
-
-        // merge proof
-        r1cs_example<FieldT_B> final_example = merge_verifier< ppT_A, ppT_B, FieldT_A, FieldT_B>(verifier_1, verifier_2);
-
-        cerr<<"test final proof"<<endl;
-        assert(final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input));
-        cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-
-        size_t primary_input_size_1 = verifier_1.primary_input.size();
-        size_t digest_len = HashT_B::get_digest_len();
-        cerr<<HashT_A::get_digest_len() << ' '<<HashT_B::get_digest_len()<<endl;
-        assert(HashT_A::get_digest_len() ==  HashT_B::get_digest_len());
-        merge_inputs<FieldT_B>(final_example, vk_size_in_Fields + 1 + digest_len*2, vk_size_in_Fields + 1 + digest_len*4, primary_input_size_1 + vk_size_in_Fields + 1, primary_input_size_1 + vk_size_in_Fields + 1 + digest_len*2);
-        merge_inputs<FieldT_B>(final_example, 0, vk_size_in_Fields-1, primary_input_size_1, primary_input_size_1 + vk_size_in_Fields - 1);
-
-        cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-    */
-
 int main(void)
 {
     libff::mnt4_pp::init_public_params();
@@ -390,5 +342,5 @@ int main(void)
 
     test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp>> >("mnt4");
     test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
-    test_leaf_verifier<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
+    test_leaf_verifier<libff::mnt4_pp>("mnt4");
 }
