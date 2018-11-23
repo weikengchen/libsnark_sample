@@ -46,29 +46,33 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
     assert(input_as_bits.size() == input_size_in_bits);\
     multipacking_gadget<FieldT_B> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_B::capacity(), FMT(annotation, " unpack_inputs"));\
-	const size_t elt_size = FieldT_A::size_in_bits();\
-	const size_t primary_input_size_in_bits = elt_size * 3;\
+	const size_t primary_input_size_in_bits = 298;\
 	r1cs_ppzksnark_preprocessed_r1cs_ppzksnark_verification_key_variable<ppT_B> hardcoded_vk(pb, leaf_vk, "hardcoded_vk");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_1(pb, "proof_1");\
+	pb_variable_array<FieldT_B> primary_input_1_bits_first_half;\
+	pb_variable_array<FieldT_B> primary_input_1_bits_second_half;\
+	primary_input_1_bits_first_half.allocate(pb, primary_input_size_in_bits, "primary_input_1_bits_first_half");\
+	primary_input_1_bits_second_half.allocate(pb, primary_input_size_in_bits, "primary_input_1_bits_second_half");\
 	pb_variable_array<FieldT_B> primary_input_1_bits;\
-	primary_input_1_bits.allocate(pb, primary_input_1_size_in_bits, "primary_input_1_bits");\
+	primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_first_half.bits.begin(), primary_input_1_bits_first_half.bits.end());\
+    primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_second_half.bits.begin(), primary_input_1_bits_second_half.bits.end());\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_2(pb, "proof_2");\
+	pb_variable_array<FieldT_B> primary_input_2_bits_first_half;\
+	pb_variable_array<FieldT_B> primary_input_2_bits_second_half;\
+	primary_input_2_bits_first_half.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits_first_half");\
+	primary_input_2_bits_second_half.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits_second_half");\
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
-	primary_input_2_bits.allocate(pb, primary_input_2_size_in_bits, "primary_input_2_bits");\
-	digest_variable<FieldT_A> primary_1_prev_root_digest(pb, digest_len, "primary_1_prev_root_digest");\
-    digest_variable<FieldT_A> primary_2_next_root_digest(pb, digest_len, "primary_2_next_root_digest");\
-    input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());\
-    input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
-	digest_variable<FieldT_A> prev_leaf_digest(pb, digest_len, "prev_leaf_digest");\
-    digest_variable<FieldT_A> next_leaf_digest(pb, digest_len, "next_leaf_digest");\
-    merkle_authentication_path_variable<FieldT_A, HashT_A> prev_path_var(pb, tree_depth, "prev_path_var");\
-    merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");\
-    merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,\
-                                                         prev_leaf_digest, prev_root_digest, prev_path_var,\
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
-    unpack_input.generate_r1cs_constraints(true);\
-    prev_path_var.generate_r1cs_constraints();\
-    mls.generate_r1cs_constraints();
+	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.bits.begin(), primary_input_2_bits_first_half.bits.end());\
+    primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.bits.begin(), primary_input_2_bits_second_half.bits.end());\
+	pb_variable<FieldT_B> result_1;\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier(pb, hardcoded_vk, primary_input_1_bits, elt_size, proof_1, result_1, "online_verifier_1");\
+	pb_variable<FieldT_B> result_2;\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier(pb, hardcoded_vk, primary_input_2_bits, elt_size, proof_2, result_2, "online_verifier_2");\
+	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin(), prev_root_digest.bits.end());\
+	bit_vector_copy_gadget<ppT_B> check_equal(pb, primary_input_1_bits_first_half.bits, prev_root_digest.bits.bits, pb_variable<FieldT_B>(1), FieldT::capacity(), FMT(annotation_prefix, " check_root"));\
+	unpack_input.generate_r1cs_constraints(true);\
+	proof_1.generate_r1cs_constraints();\
+	proof_2.generate_r1cs_constraints();\
 
 
 template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {

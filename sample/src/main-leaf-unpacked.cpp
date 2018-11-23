@@ -42,7 +42,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     merkle_authentication_path_variable<FieldT_A, HashT_A> next_path_var(pb, tree_depth, "next_path_var");\
     merkle_tree_check_update_gadget<FieldT_A, HashT_A> mls(pb, tree_depth, address_bits_va,\
                                                          prev_leaf_digest, prev_root_digest, prev_path_var,\
-                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(0), "mls");\
+                                                         next_leaf_digest, next_root_digest, next_path_var, pb_variable<FieldT_A>(1), "mls");\
     prev_path_var.generate_r1cs_constraints();\
     mls.generate_r1cs_constraints();
 
