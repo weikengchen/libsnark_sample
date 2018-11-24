@@ -12,6 +12,7 @@
 #include <libsnark/gadgetlib1/gadgets/verifiers/r1cs_ppzksnark_verifier_gadget.hpp>
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
 #include <libsnark/gadgetlib1/gadgets/merkle_tree/merkle_tree_check_update_gadget.hpp>
+#include <libsnark/gadgetlib1/gadgets/basic_gadgets.hpp>
 
 #include <iostream>
 #include <fstream>
