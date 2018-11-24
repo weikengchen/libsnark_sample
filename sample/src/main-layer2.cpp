@@ -81,7 +81,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	check_equal_2.generate_r1cs_constraints();\
 	check_equal_3.generate_r1cs_constraints();
 
-template<typename ppT_A, typename ppT_B> void test_leaf_gen(const std::string &annotation) {
+template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
 	typedef CRH_with_bit_out_gadget<FieldT_A> HashT_A;
 	typedef libff::Fr<ppT_B> FieldT_B;
