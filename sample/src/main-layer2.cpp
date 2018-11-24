@@ -84,6 +84,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 template<typename ppT_A, typename ppT_B> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
 	typedef CRH_with_bit_out_gadget<FieldT_A> HashT_A;
+	typedef libff::Fr<ppT_B> FieldT_B;
     
     const size_t digest_len = HashT_A::get_digest_len();
     const size_t tree_depth = 16;
