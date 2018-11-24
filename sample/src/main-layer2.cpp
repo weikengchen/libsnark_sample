@@ -70,17 +70,17 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	pb_variable<FieldT_B> result_2;\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, 596, proof_2, result_2, "online_verifier_2");\
 	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin(), prev_root_digest.bits.end());\
-	bit_vector_copy_gadget<ppT_B> check_equal_1(pb, primary_input_1_bits_first_half, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
+	bit_vector_copy_gadget<ppT_B> check_equal_1(pb, primary_input_1_bits_first_half, prev_root_digest, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
 	bit_vector_copy_gadget<ppT_B> check_equal_2(pb, primary_input_1_bits_second_half, primary_input_2_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_1"));\
-	bit_vector_copy_gadget<ppT_B> check_equal_3(pb, primary_input_2_bits_second_half, next_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_2"));\
+	bit_vector_copy_gadget<ppT_B> check_equal_3(pb, primary_input_2_bits_second_half, next_root_digest, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_2"));\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
 	online_verifier_1.generate_r1cs_constraints();\
 	online_verifier_2.generate_r1cs_constraints();\
-	check_equal_1.generate_r1cs_constraints();\
-	check_equal_2.generate_r1cs_constraints();\
-	check_equal_3.generate_r1cs_constraints();
+	check_equal_1.generate_r1cs_constraints(false, false);\
+	check_equal_2.generate_r1cs_constraints(true, true);\
+	check_equal_3.generate_r1cs_constraints(false, false);
 
 template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
