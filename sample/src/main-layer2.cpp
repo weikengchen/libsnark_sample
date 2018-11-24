@@ -92,7 +92,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
 	
 	// read the verifying key
     r1cs_ppzksnark_verification_key<ppT_A> leaf_vk;    
-    ifstream fileIn("vk_leaf_unpacked");
+    ifstream fileIn("vk_unpacked_leaf");
     stringstream verificationKeyFromFile;
     if (fileIn) {
        verificationKeyFromFile << fileIn.rdbuf();
