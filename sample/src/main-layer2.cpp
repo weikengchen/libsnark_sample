@@ -99,6 +99,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
        fileIn.close();
     }
     verificationKeyFromFile >> leaf_vk;
+	
+	printf("Debug 1: load vk.\n");
     
     LEAF_GADGET(leaf_vk);
         
