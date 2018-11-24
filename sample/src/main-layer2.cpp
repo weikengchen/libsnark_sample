@@ -65,48 +65,66 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.bits.begin(), primary_input_2_bits_first_half.bits.end());\
     primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.bits.begin(), primary_input_2_bits_second_half.bits.end());\
 	pb_variable<FieldT_B> result_1;\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier(pb, hardcoded_vk, primary_input_1_bits, elt_size, proof_1, result_1, "online_verifier_1");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, elt_size, proof_1, result_1, "online_verifier_1");\
 	pb_variable<FieldT_B> result_2;\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier(pb, hardcoded_vk, primary_input_2_bits, elt_size, proof_2, result_2, "online_verifier_2");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, elt_size, proof_2, result_2, "online_verifier_2");\
 	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin(), prev_root_digest.bits.end());\
-	bit_vector_copy_gadget<ppT_B> check_equal(pb, primary_input_1_bits_first_half.bits, prev_root_digest.bits.bits, pb_variable<FieldT_B>(1), FieldT::capacity(), FMT(annotation_prefix, " check_root"));\
+	bit_vector_copy_gadget<ppT_B> check_equal_1(pb, primary_input_1_bits_first_half.bits, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation_prefix, " check_prev_hash_1"));\
+	bit_vector_copy_gadget<ppT_B> check_equal_2(pb, primary_input_1_bits_second_half.bits, primary_input_2_bits_first_half.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation_prefix, " check_next_hash_1"));\
+	bit_vector_copy_gadget<ppT_B> check_equal_3(pb, primary_input_2_bits_second_half.bits, next_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation_prefix, " check_next_hash_2"));\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
+	online_verifier_1.generate_r1cs_constraints();\
+	online_verifier_2.generate_r1cs_constraints();\
+	check_equal_1.generate_r1cs_constraints();\
+	check_equal_2.generate_r1cs_constraints();\
+	check_equal_3.generate_r1cs_constraints();
 
-
-template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
+template<typename ppT_A, typename ppT_B> void test_leaf_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
+	typedef CRH_with_bit_out_gadget<FieldT_A> HashT_A;
     
     const size_t digest_len = HashT_A::get_digest_len();
     const size_t tree_depth = 16;
+	
+	// read the verifying key
+    r1cs_ppzksnark_verification_key<ppT_A> leaf_vk;    
+    ifstream fileIn("vk_leaf_unpacked");
+    stringstream verificationKeyFromFile;
+    if (fileIn) {
+       verificationKeyFromFile << fileIn.rdbuf();
+       fileIn1.close();
+    }
+    verificationKeyFromFile >> leaf_vk;
     
-    LEAF_GADGET
+    LEAF_GADGET(leaf_vk);
         
-    const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
+    const r1cs_constraint_system<FieldT_B> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 
     // generate a key pair
-    const r1cs_ppzksnark_keypair<ppT_A> keypair = r1cs_ppzksnark_generator<ppT_A>(constraint_system);
+    const r1cs_ppzksnark_keypair<ppT_B> keypair = r1cs_ppzksnark_generator<ppT_B>(constraint_system);
 
     // save the verifying key
-    stringstream vk_leaf;
-    vk_leaf << keypair.vk;
+    stringstream vk_layer2;
+    vk_layer2 << keypair.vk;
     
     ofstream fileOut;
-    fileOut.open("vk_leaf");
-    fileOut << vk_leaf.rdbuf();
+    fileOut.open("vk_layer2");
+    fileOut << vk_layer2.rdbuf();
     fileOut.close();
     
     // save the proving key
-    stringstream pk_leaf;
-    pk_leaf << keypair.pk;
+    stringstream pk_layer2;
+    pk_layer2 << keypair.pk;
     
-    fileOut.open("pk_leaf");
-    fileOut << pk_leaf.rdbuf();
+    fileOut.open("pk_layer2");
+    fileOut << pk_layer2.rdbuf();
     fileOut.close();
 }
 
+/*
 template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
     auto tree_depth = 16;
 
@@ -332,40 +350,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_ver
 		printf("proof 2 is valid.\n");
 	}
 }
+*/
 
-    /*
-
- 
-    r1cs_example<FieldT_B> verifier_1 = test_verifier_B< ppT_A, ppT_B >(new_example, annotation_A, annotation_B, vk_size_in_Fields);
-
-        // try recursive proofs
-        cerr<<"start second proof"<<endl;
-        
-        r1cs_example<FieldT_B> verifier_2 = test_verifier_B< ppT_A, ppT_B >(another_example, annotation_A, annotation_B, vk_size_in_Fields);
-        verifier_2.constraint_system = verifier_1.constraint_system;
-        //protoboard<FieldT_B> pb_2(pb_1.get_constraint_system, another_example.primary_input, another_example.auxiliary_input);
-
-
-        //r1cs_example<FieldT_B> cs(pb_1.get_constraint_system(), pb_2.primary_input(), pb_2.auxiliary_input());
-        //cerr<<cs.constraint_system.is_satisfied(cs.primary_input, cs.auxiliary_input)<<endl;
-        //exit(0);
-
-        // merge proof
-        r1cs_example<FieldT_B> final_example = merge_verifier< ppT_A, ppT_B, FieldT_A, FieldT_B>(verifier_1, verifier_2);
-
-        cerr<<"test final proof"<<endl;
-        assert(final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input));
-        cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-
-        size_t primary_input_size_1 = verifier_1.primary_input.size();
-        size_t digest_len = HashT_B::get_digest_len();
-        cerr<<HashT_A::get_digest_len() << ' '<<HashT_B::get_digest_len()<<endl;
-        assert(HashT_A::get_digest_len() ==  HashT_B::get_digest_len());
-        merge_inputs<FieldT_B>(final_example, vk_size_in_Fields + 1 + digest_len*2, vk_size_in_Fields + 1 + digest_len*4, primary_input_size_1 + vk_size_in_Fields + 1, primary_input_size_1 + vk_size_in_Fields + 1 + digest_len*2);
-        merge_inputs<FieldT_B>(final_example, 0, vk_size_in_Fields-1, primary_input_size_1, primary_input_size_1 + vk_size_in_Fields - 1);
-
-        cerr<<final_example.constraint_system.is_satisfied(final_example.primary_input, final_example.auxiliary_input)<<endl;
-    */
 
 int main(void)
 {
@@ -373,6 +359,6 @@ int main(void)
 	libff::mnt6_pp::init_public_params();
 
     test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
-    test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
-    test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    //test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    //test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
 }

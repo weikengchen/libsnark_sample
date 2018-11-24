@@ -10,6 +10,11 @@ add_executable(
 
   main-leaf-unpacked.cpp
 )
+add_executable(
+  main-layer2
+
+  main-layer2.cpp
+)
 target_link_libraries(
   main-leaf
 
@@ -17,6 +22,11 @@ target_link_libraries(
 )
 target_link_libraries(
   main-leaf-unpacked
+
+  snark
+)
+target_link_libraries(
+  main-layer2
 
   snark
 )
@@ -29,6 +39,13 @@ target_include_directories(
 )
 target_include_directories(
   main-leaf-unpacked
+
+  PUBLIC
+  ${DEPENDS_DIR}/libsnark
+  ${DEPENDS_DIR}/libsnark/depends/libfqfft
+)
+target_include_directories(
+  main-layer2
 
   PUBLIC
   ${DEPENDS_DIR}/libsnark
