@@ -59,6 +59,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	pb_variable_array<FieldT_B> primary_input_1_bits;\
 	primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_first_half.begin(), primary_input_1_bits_first_half.end());\
     primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_second_half.begin(), primary_input_1_bits_second_half.end());\
+	printf("Debug 5.\n");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_2(pb, "proof_2");\
 	pb_variable_array<FieldT_B> primary_input_2_bits_first_half;\
 	pb_variable_array<FieldT_B> primary_input_2_bits_second_half;\
@@ -67,6 +68,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
 	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.begin(), primary_input_2_bits_first_half.end());\
     primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.begin(), primary_input_2_bits_second_half.end());\
+	printf("Debug 6.\n");\
 	pb_variable<FieldT_B> result_1;\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, 596, proof_1, result_1, "online_verifier_1");\
 	pb_variable<FieldT_B> result_2;\
