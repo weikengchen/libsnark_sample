@@ -65,9 +65,9 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.bits.begin(), primary_input_2_bits_first_half.bits.end());\
     primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.bits.begin(), primary_input_2_bits_second_half.bits.end());\
 	pb_variable<FieldT_B> result_1;\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, elt_size, proof_1, result_1, "online_verifier_1");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, 596, proof_1, result_1, "online_verifier_1");\
 	pb_variable<FieldT_B> result_2;\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, elt_size, proof_2, result_2, "online_verifier_2");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, 596, proof_2, result_2, "online_verifier_2");\
 	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin(), prev_root_digest.bits.end());\
 	bit_vector_copy_gadget<ppT_B> check_equal_1(pb, primary_input_1_bits_first_half.bits, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation_prefix, " check_prev_hash_1"));\
 	bit_vector_copy_gadget<ppT_B> check_equal_2(pb, primary_input_1_bits_second_half.bits, primary_input_2_bits_first_half.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation_prefix, " check_next_hash_1"));\
@@ -95,7 +95,7 @@ template<typename ppT_A, typename ppT_B> void test_leaf_gen(const std::string &a
     stringstream verificationKeyFromFile;
     if (fileIn) {
        verificationKeyFromFile << fileIn.rdbuf();
-       fileIn1.close();
+       fileIn.close();
     }
     verificationKeyFromFile >> leaf_vk;
     
