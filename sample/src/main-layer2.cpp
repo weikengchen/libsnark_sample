@@ -34,20 +34,22 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 #define LEAF_GADGET(leaf_vk) protoboard<FieldT_B> pb;\
     pb_variable_array<FieldT_B> input_as_field_elements;\
     pb_variable_array<FieldT_B> input_as_bits;\
-    \
     const size_t input_size_in_bits = digest_len * 2;\
     {\
         const size_t input_size_in_field_elements = libff::div_ceil(input_size_in_bits, FieldT_B::capacity());\
         input_as_field_elements.allocate(pb, input_size_in_field_elements, "input_as_field_elements");\
         pb.set_input_sizes(input_size_in_field_elements);\
     }\
+	printf("Debug 2.\n");\
     digest_variable<FieldT_B> prev_root_digest(pb, digest_len, "prev_root_digest");\
     digest_variable<FieldT_B> next_root_digest(pb, digest_len, "next_root_digest");\
     input_as_bits.insert(input_as_bits.end(), prev_root_digest.bits.begin(), prev_root_digest.bits.end());\
     input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
-    assert(input_as_bits.size() == input_size_in_bits);\
+	printf("Debug 3.\n");\
+	assert(input_as_bits.size() == input_size_in_bits);\
     multipacking_gadget<FieldT_B> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_B::capacity(), FMT(annotation, " unpack_inputs"));\
 	const size_t primary_input_size_in_bits = 298;\
+	printf("Debug 4.\n");\
 	r1cs_ppzksnark_preprocessed_r1cs_ppzksnark_verification_key_variable<ppT_B> hardcoded_vk(pb, leaf_vk, "hardcoded_vk");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_1(pb, "proof_1");\
 	pb_variable_array<FieldT_B> primary_input_1_bits_first_half;\
