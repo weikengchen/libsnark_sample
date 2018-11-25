@@ -173,22 +173,36 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn5.close();
     }
 	
+	libff::bit_vector primary_input_1_as_bits;
+    for (const FieldT_A &el : primary_input_1_in)
+    {
+        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, 1);
+        primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
+    }
+	
 	// separate the primary_input_1
 	libff::bit_vector primary_input_first_part_1_in;
 	libff::bit_vector primary_input_second_part_1_in;
 	
 	for(int i = 0; i < 298; i++){
-		primary_input_first_part_1_in[i] = primary_input_1_in[i];
-		primary_input_second_part_1_in[i] = primary_input_1_in[i + 298];
+		primary_input_first_part_1_in[i] = primary_input_1_as_bits[i];
+		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + 298];
 	}
+	
+	libff::bit_vector primary_input_2_as_bits;
+    for (const FieldT_A &el : primary_input_2_in)
+    {
+        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, 1);
+        primary_input_2_as_bits.insert(primary_input_2_as_bits.end(), v.begin(), v.end());
+    }
 	
 	// separate the primary_input_2
 	libff::bit_vector primary_input_first_part_2_in;
 	libff::bit_vector primary_input_second_part_2_in;
 	
 	for(int i = 0; i < 298; i++){
-		primary_input_first_part_2_in[i] = primary_input_2_in[i];
-		primary_input_second_part_2_in[i] = primary_input_2_in[i + 298];
+		primary_input_first_part_2_in[i] = primary_input_2_as_bits[i];
+		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + 298];
 	}
 	
 	// declare the constraint system    
