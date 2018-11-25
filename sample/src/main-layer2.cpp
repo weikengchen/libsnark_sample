@@ -46,24 +46,14 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
 	assert(input_as_bits.size() == input_size_in_bits);\
     multipacking_gadget<FieldT_B> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_B::capacity(), FMT(annotation, " unpack_inputs"));\
-	const size_t primary_input_size_in_bits = 298 * FieldT_A::size_in_bits();\
+	const size_t primary_input_size_in_bits = 3 * FieldT_A::size_in_bits();\
 	r1cs_ppzksnark_preprocessed_r1cs_ppzksnark_verification_key_variable<ppT_B> hardcoded_vk(pb, leaf_vk, "hardcoded_vk");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_1(pb, "proof_1");\
-	pb_variable_array<FieldT_B> primary_input_1_bits_first_half;\
-	pb_variable_array<FieldT_B> primary_input_1_bits_second_half;\
-	primary_input_1_bits_first_half.allocate(pb, primary_input_size_in_bits, "primary_input_1_bits_first_half");\
-	primary_input_1_bits_second_half.allocate(pb, primary_input_size_in_bits, "primary_input_1_bits_second_half");\
 	pb_variable_array<FieldT_B> primary_input_1_bits;\
-	primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_first_half.begin(), primary_input_1_bits_first_half.end());\
-    primary_input_1_bits.insert(primary_input_1_bits.end(), primary_input_1_bits_second_half.begin(), primary_input_1_bits_second_half.end());\
+	primary_input_1_bits.allocate(pb, primary_input_1_bits, "primary_input_1_bits");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_2(pb, "proof_2");\
-	pb_variable_array<FieldT_B> primary_input_2_bits_first_half;\
-	pb_variable_array<FieldT_B> primary_input_2_bits_second_half;\
-	primary_input_2_bits_first_half.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits_first_half");\
-	primary_input_2_bits_second_half.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits_second_half");\
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
-	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.begin(), primary_input_2_bits_first_half.end());\
-    primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.begin(), primary_input_2_bits_second_half.end());\
+	primary_input_2_bits.allocate(pb, primary_input_2_bits, "primary_input_2_bits");\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, pb_variable<FieldT_B>(1), "online_verifier_1");\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
 	unpack_input.generate_r1cs_constraints(true);\
@@ -89,7 +79,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
 	
 	// read the verifying key
     r1cs_ppzksnark_verification_key<ppT_A> leaf_vk;    
-    ifstream fileIn1("vk_unpacked_leaf");
+    ifstream fileIn1("vk_packed_leaf");
     stringstream verificationKeyFromFile;
     if (fileIn1) {
        verificationKeyFromFile << fileIn1.rdbuf();
@@ -139,9 +129,9 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     }
     provingKeyFromFile >> pk;
 	
-	// read the proof 1 (unpacked)
+	// read the proof 1 (packed)
     r1cs_ppzksnark_proof<ppT_A> proof_1_in;    
-    ifstream fileIn2("proof_unpacked_1");
+    ifstream fileIn2("proof_packed_1");
     stringstream proofFromFile;
     if (fileIn2) {
        proofFromFile << fileIn2.rdbuf();
@@ -149,32 +139,32 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     }
     proofFromFile >> proof_1_in;
 	
-    // read the input 1 (unpacked)
+    // read the input 1 (packed)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1_in;
-	ifstream fileIn3("primary_input_unpacked_1");
+	ifstream fileIn3("primary_input_packed_1");
     if (fileIn3) {
         fileIn3 >> primary_input_1_in;
         fileIn3.close();
     }
 	
-    // read the proof 2 (unpacked)
+    // read the proof 2 (packed)
     r1cs_ppzksnark_proof<ppT_A> proof_2_in;    
-    ifstream fileIn4("proof_unpacked_2");
+    ifstream fileIn4("proof_packed_2");
     if (fileIn4) {
        proofFromFile << fileIn4.rdbuf();
        fileIn4.close();
     }
     proofFromFile >> proof_2_in;
 	
-    // read the input 2 (unpacked)
+    // read the input 2 (packed)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2_in;
-    ifstream fileIn5("primary_input_unpacked_2");
+    ifstream fileIn5("primary_input_packed_2");
     if (fileIn5) {
        fileIn5 >> primary_input_2_in;
        fileIn5.close();
     }
 	
-	const size_t primary_input_half_bits = 298 * FieldT_A::size_in_bits();
+	const size_t primary_input_num_bits = 3 * FieldT_A::size_in_bits();
 	
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
@@ -183,15 +173,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
         primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
     }
 	
-	// separate the primary_input_1
-	libff::bit_vector primary_input_first_part_1_in(primary_input_half_bits);
-	libff::bit_vector primary_input_second_part_1_in(primary_input_half_bits);
-	
-	for(int i = 0; i < primary_input_half_bits ; i++){
-		primary_input_first_part_1_in[i] = primary_input_1_as_bits[i];
-		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + primary_input_half_bits];
-	}
-	
 	libff::bit_vector primary_input_2_as_bits;
     for (const FieldT_A &el : primary_input_2_in)
     {
@@ -199,21 +180,12 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
         primary_input_2_as_bits.insert(primary_input_2_as_bits.end(), v.begin(), v.end());
     }
 	
-	// separate the primary_input_2
-	libff::bit_vector primary_input_first_part_2_in(primary_input_half_bits);
-	libff::bit_vector primary_input_second_part_2_in(primary_input_half_bits);
-	
-	for(int i = 0; i < primary_input_half_bits; i++){
-		primary_input_first_part_2_in[i] = primary_input_2_as_bits[i];
-		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + primary_input_half_bits];
-	}
-	
 	// declare the constraint system    
     const size_t digest_len = HashT_A::get_digest_len();
 	
 	// read the verifying key
     r1cs_ppzksnark_verification_key<ppT_A> leaf_vk;    
-    ifstream fileIn1("vk_unpacked_leaf");
+    ifstream fileIn1("vk_packed_leaf");
     stringstream verificationKeyFromFile;
     if (fileIn1) {
        verificationKeyFromFile << fileIn1.rdbuf();
@@ -227,21 +199,16 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     const r1cs_constraint_system<FieldT_B> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 	
-    prev_root_digest.generate_r1cs_witness(primary_input_first_part_1_in);
-	next_root_digest.generate_r1cs_witness(primary_input_second_part_2_in);
+	libff::bit_vector empty_hash_value(digest_len);
+	
+    prev_root_digest.generate_r1cs_witness(empty_hash_value);
+	next_root_digest.generate_r1cs_witness(empty_hash_value);
 	unpack_input.generate_r1cs_constraints(true);
 	proof_1.generate_r1cs_witness(proof_1_in);
-	
-	// this part
-	primary_input_1_bits_first_half.fill_with_bits(pb, primary_input_first_part_1_in);
-	primary_input_1_bits_second_half.fill_with_bits(pb, primary_input_second_part_1_in);
-	
+	primary_input_1_bits.fill_with_bits(pb, primary_input_1_as_bits);
 	online_verifier_1.generate_r1cs_witness();
 	proof_2.generate_r1cs_witness(proof_2_in);
-	
-	primary_input_2_bits_first_half.fill_with_bits(pb, primary_input_first_part_2_in);
-	primary_input_2_bits_second_half.fill_with_bits(pb, primary_input_second_part_2_in);
-	
+	primary_input_2_bits.fill_with_bits(pb, primary_input_2_as_bits);
 	online_verifier_2.generate_r1cs_witness();
 	//check_equal_1.generate_r1cs_witness();
 	//check_equal_2.generate_r1cs_witness();
