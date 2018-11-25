@@ -174,36 +174,38 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn5.close();
     }
 	
+	const size_t primary_input_half_bits = 298 * FieldT_A::size_in_bits();
+	
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
     {
-        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, 1);
+        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, FieldT_A::size_in_bits());
         primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
     }
 	
 	// separate the primary_input_1
-	libff::bit_vector primary_input_first_part_1_in(298);
-	libff::bit_vector primary_input_second_part_1_in(298);
+	libff::bit_vector primary_input_first_part_1_in(primary_input_half_bits);
+	libff::bit_vector primary_input_second_part_1_in(primary_input_half_bits);
 	
-	for(int i = 0; i < 298; i++){
+	for(int i = 0; i < primary_input_half_bits ; i++){
 		primary_input_first_part_1_in[i] = primary_input_1_as_bits[i];
-		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + 298];
+		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + primary_input_half_bits ];
 	}
 	
 	libff::bit_vector primary_input_2_as_bits;
     for (const FieldT_A &el : primary_input_2_in)
     {
-        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, 1);
+        libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, FieldT_A::size_in_bits());
         primary_input_2_as_bits.insert(primary_input_2_as_bits.end(), v.begin(), v.end());
     }
 	
 	// separate the primary_input_2
-	libff::bit_vector primary_input_first_part_2_in(298);
-	libff::bit_vector primary_input_second_part_2_in(298);
+	libff::bit_vector primary_input_first_part_2_in(primary_input_half_bits);
+	libff::bit_vector primary_input_second_part_2_in(primary_input_half_bits);
 	
-	for(int i = 0; i < 298; i++){
+	for(int i = 0; i < primary_input_half_bits; i++){
 		primary_input_first_part_2_in[i] = primary_input_2_as_bits[i];
-		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + 298];
+		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + primary_input_half_bits];
 	}
 	
 	// declare the constraint system    
@@ -229,12 +231,17 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	next_root_digest.generate_r1cs_witness(primary_input_second_part_2_in);
 	unpack_input.generate_r1cs_constraints(true);
 	proof_1.generate_r1cs_witness(proof_1_in);
+	
+	// this part
 	primary_input_1_bits_first_half.fill_with_bits(pb, primary_input_first_part_1_in);
 	primary_input_1_bits_second_half.fill_with_bits(pb, primary_input_second_part_1_in);
+	
 	online_verifier_1.generate_r1cs_witness();
 	proof_2.generate_r1cs_witness(proof_2_in);
+	
 	primary_input_2_bits_first_half.fill_with_bits(pb, primary_input_first_part_2_in);
 	primary_input_2_bits_second_half.fill_with_bits(pb, primary_input_second_part_2_in);
+	
 	online_verifier_2.generate_r1cs_witness();
 	//check_equal_1.generate_r1cs_witness();
 	//check_equal_2.generate_r1cs_witness();
