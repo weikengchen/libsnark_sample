@@ -234,20 +234,20 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     const size_t num_constraints = pb.num_constraints();
     cerr<<pb.primary_input().size()<<' '<<pb.auxiliary_input().size()<<endl;
     
-    auto proof_1 = r1cs_ppzksnark_prover<ppT_B>(pk, pb.primary_input(), pb.auxiliary_input());
+    auto proof_layer2 = r1cs_ppzksnark_prover<ppT_B>(pk, pb.primary_input(), pb.auxiliary_input());
     
     stringstream proofStream;
-    proofStream << proof_1;
+    proofStream << layer2;
 
     ofstream fileOut;
     fileOut.open("proof_layer2");
     fileOut << proofStream.rdbuf();
     fileOut.close();
     
-    auto primary_input_1 = pb.primary_input();
+    auto primary_input_layer2 = pb.primary_input();
     
     stringstream primaryinputStream;
-    primaryinputStream << primary_input_1;
+    primaryinputStream << primary_input_layer2;
 
     fileOut.open("primary_input_layer2");
     fileOut << primaryinputStream.rdbuf();
