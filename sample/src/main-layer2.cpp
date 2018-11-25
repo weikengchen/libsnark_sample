@@ -129,7 +129,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	typedef libff::Fr<ppT_B> FieldT_B;
 	
     // read the proving key
-    r1cs_ppzksnark_proving_key<ppT_A> pk;    
+    r1cs_ppzksnark_proving_key<ppT_B> pk;    
     ifstream fileIn("pk_layer2");
     stringstream provingKeyFromFile;
     if (fileIn) {
