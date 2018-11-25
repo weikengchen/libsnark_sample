@@ -73,10 +73,11 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
 	online_verifier_1.generate_r1cs_constraints();\
-	online_verifier_2.generate_r1cs_constraints();\
-	check_equal_1.generate_r1cs_constraints(false, false);\
-	check_equal_2.generate_r1cs_constraints(true, true);\
-	check_equal_3.generate_r1cs_constraints(false, false);
+	online_verifier_2.generate_r1cs_constraints();
+
+//	check_equal_1.generate_r1cs_constraints(false, false);\
+//	check_equal_2.generate_r1cs_constraints(true, true);\
+//	check_equal_3.generate_r1cs_constraints(false, false);
 
 template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string &annotation) {
     typedef libff::Fr<ppT_A> FieldT_A;
@@ -137,7 +138,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn.close();
     }
     provingKeyFromFile >> pk;
-	printf("1\n");
 	
 	// read the proof 1 (unpacked)
     r1cs_ppzksnark_proof<ppT_A> proof_1_in;    
@@ -148,7 +148,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn2.close();
     }
     proofFromFile >> proof_1_in;
-    printf("2\n");
 	
     // read the input 1 (unpacked)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1_in;
@@ -157,7 +156,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
         fileIn3 >> primary_input_1_in;
         fileIn3.close();
     }
-    printf("3\n");
 	
     // read the proof 2 (unpacked)
     r1cs_ppzksnark_proof<ppT_A> proof_2_in;    
@@ -167,7 +165,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn4.close();
     }
     proofFromFile >> proof_2_in;
-    printf("4\n");
 	
     // read the input 2 (unpacked)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2_in;
@@ -176,7 +173,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn5 >> primary_input_2_in;
        fileIn5.close();
     }
-	printf("5\n");
 	
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
@@ -193,7 +189,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 		primary_input_first_part_1_in[i] = primary_input_1_as_bits[i];
 		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + 298];
 	}
-	printf("6\n");
 	
 	libff::bit_vector primary_input_2_as_bits;
     for (const FieldT_A &el : primary_input_2_in)
@@ -210,7 +205,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 		primary_input_first_part_2_in[i] = primary_input_2_as_bits[i];
 		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + 298];
 	}
-	printf("7\n");
 	
 	// declare the constraint system    
     const size_t digest_len = HashT_A::get_digest_len();
@@ -242,14 +236,14 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	primary_input_2_bits_first_half.fill_with_bits(pb, primary_input_first_part_2_in);
 	primary_input_2_bits_second_half.fill_with_bits(pb, primary_input_second_part_2_in);
 	online_verifier_2.generate_r1cs_witness();
-	check_equal_1.generate_r1cs_witness();
-	check_equal_2.generate_r1cs_witness();
-	check_equal_3.generate_r1cs_witness();
+	//check_equal_1.generate_r1cs_witness();
+	//check_equal_2.generate_r1cs_witness();
+	//check_equal_3.generate_r1cs_witness();
         
     // =================================================================================================
 
     if(!pb.is_satisfied()){
-        printf("The language is not accepted for proof 1.\n");
+        printf("The language is not accepted for proof.\n");
     }
 
     const size_t num_constraints = pb.num_constraints();
@@ -347,7 +341,7 @@ int main(void)
     libff::mnt4_pp::init_public_params();
 	libff::mnt6_pp::init_public_params();
 
-    //test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
     test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
     //test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
 }
