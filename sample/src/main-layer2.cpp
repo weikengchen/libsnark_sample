@@ -137,6 +137,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn.close();
     }
     provingKeyFromFile >> pk;
+	printf("1\n");
 	
 	// read the proof 1 (unpacked)
     r1cs_ppzksnark_proof<ppT_A> proof_1_in;    
@@ -147,7 +148,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn2.close();
     }
     proofFromFile >> proof_1_in;
-    
+    printf("2\n");
+	
     // read the input 1 (unpacked)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_1_in;
 	ifstream fileIn3("primary_input_unpacked_1");
@@ -155,7 +157,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
         fileIn3 >> primary_input_1_in;
         fileIn3.close();
     }
-    
+    printf("3\n");
+	
     // read the proof 2 (unpacked)
     r1cs_ppzksnark_proof<ppT_A> proof_2_in;    
     ifstream fileIn4("proof_unpacked_2");
@@ -164,7 +167,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn4.close();
     }
     proofFromFile >> proof_2_in;
-    
+    printf("4\n");
+	
     // read the input 2 (unpacked)
     r1cs_ppzksnark_primary_input<ppT_A> primary_input_2_in;
     ifstream fileIn5("primary_input_unpacked_2");
@@ -172,6 +176,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
        fileIn5 >> primary_input_2_in;
        fileIn5.close();
     }
+	printf("5\n");
 	
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
@@ -181,13 +186,14 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     }
 	
 	// separate the primary_input_1
-	libff::bit_vector primary_input_first_part_1_in;
-	libff::bit_vector primary_input_second_part_1_in;
+	libff::bit_vector primary_input_first_part_1_in(298);
+	libff::bit_vector primary_input_second_part_1_in(298);
 	
 	for(int i = 0; i < 298; i++){
 		primary_input_first_part_1_in[i] = primary_input_1_as_bits[i];
 		primary_input_second_part_1_in[i] = primary_input_1_as_bits[i + 298];
 	}
+	printf("6\n");
 	
 	libff::bit_vector primary_input_2_as_bits;
     for (const FieldT_A &el : primary_input_2_in)
@@ -197,13 +203,14 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     }
 	
 	// separate the primary_input_2
-	libff::bit_vector primary_input_first_part_2_in;
-	libff::bit_vector primary_input_second_part_2_in;
+	libff::bit_vector primary_input_first_part_2_in(298);
+	libff::bit_vector primary_input_second_part_2_in(298);
 	
 	for(int i = 0; i < 298; i++){
 		primary_input_first_part_2_in[i] = primary_input_2_as_bits[i];
 		primary_input_second_part_2_in[i] = primary_input_2_as_bits[i + 298];
 	}
+	printf("7\n");
 	
 	// declare the constraint system    
     const size_t digest_len = HashT_A::get_digest_len();
@@ -340,7 +347,7 @@ int main(void)
     libff::mnt4_pp::init_public_params();
 	libff::mnt6_pp::init_public_params();
 
-    test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
-    //test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    //test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
     //test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
 }
