@@ -31,7 +31,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     }
 }
 
-#define LEAF_GADGET(leaf_vk) protoboard<FieldT_B> pb;\
+#define LAYER2_GADGET(leaf_vk) protoboard<FieldT_B> pb;\
     pb_variable_array<FieldT_B> input_as_field_elements;\
     pb_variable_array<FieldT_B> input_as_bits;\
     const size_t input_size_in_bits = digest_len * 2;\
