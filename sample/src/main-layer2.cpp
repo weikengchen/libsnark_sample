@@ -221,7 +221,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     LAYER2_GADGET(leaf_vk);
 	
 	
-    const r1cs_constraint_system<FieldT_A> constraint_system = pb.get_constraint_system();
+    const r1cs_constraint_system<FieldT_B> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 	
     prev_root_digest.generate_r1cs_witness(primary_input_first_part_1_in);
@@ -235,9 +235,9 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	primary_input_2_bits_first_half.fill_with_bits(pb, primary_input_first_part_2_in);
 	primary_input_2_bits_second_half.fill_with_bits(pb, primary_input_second_part_2_in);
 	online_verifier_2.generate_r1cs_witness();
-	check_equal_1.generate_r1cs_constraints.generate_r1cs_witness();
-	check_equal_2.generate_r1cs_constraints.generate_r1cs_witness();
-	check_equal_3.generate_r1cs_constraints.generate_r1cs_witness();
+	check_equal_1.generate_r1cs_witness();
+	check_equal_2.generate_r1cs_witness();
+	check_equal_3.generate_r1cs_witness();
         
     // =================================================================================================
 
