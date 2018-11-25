@@ -50,10 +50,10 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	r1cs_ppzksnark_preprocessed_r1cs_ppzksnark_verification_key_variable<ppT_B> hardcoded_vk(pb, leaf_vk, "hardcoded_vk");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_1(pb, "proof_1");\
 	pb_variable_array<FieldT_B> primary_input_1_bits;\
-	primary_input_1_bits.allocate(pb, primary_input_1_bits, "primary_input_1_bits");\
+	primary_input_1_bits.allocate(pb, primary_input_size_in_bits, "primary_input_1_bits");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_2(pb, "proof_2");\
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
-	primary_input_2_bits.allocate(pb, primary_input_2_bits, "primary_input_2_bits");\
+	primary_input_2_bits.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits");\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, pb_variable<FieldT_B>(1), "online_verifier_1");\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
 	unpack_input.generate_r1cs_constraints(true);\
