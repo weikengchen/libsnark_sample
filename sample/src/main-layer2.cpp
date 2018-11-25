@@ -46,7 +46,7 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
     input_as_bits.insert(input_as_bits.end(), next_root_digest.bits.begin(), next_root_digest.bits.end());\
 	assert(input_as_bits.size() == input_size_in_bits);\
     multipacking_gadget<FieldT_B> unpack_input(pb, input_as_bits, input_as_field_elements, FieldT_B::capacity(), FMT(annotation, " unpack_inputs"));\
-	const size_t primary_input_size_in_bits = 298;\
+	const size_t primary_input_size_in_bits = 298 * FieldT_A::size_in_bits();\
 	r1cs_ppzksnark_preprocessed_r1cs_ppzksnark_verification_key_variable<ppT_B> hardcoded_vk(pb, leaf_vk, "hardcoded_vk");\
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_1(pb, "proof_1");\
 	pb_variable_array<FieldT_B> primary_input_1_bits_first_half;\
@@ -64,8 +64,8 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
 	primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_first_half.begin(), primary_input_2_bits_first_half.end());\
     primary_input_2_bits.insert(primary_input_2_bits.end(), primary_input_2_bits_second_half.begin(), primary_input_2_bits_second_half.end());\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, 596, proof_1, pb_variable<FieldT_B>(1), "online_verifier_1");\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, 596, proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, pb_variable<FieldT_B>(1), "online_verifier_1");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
 	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, primary_input_1_bits_first_half, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
 	bit_vector_copy_gadget<FieldT_B> check_equal_2(pb, primary_input_1_bits_second_half, primary_input_2_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_1"));\
 	bit_vector_copy_gadget<FieldT_B> check_equal_3(pb, primary_input_2_bits_second_half, next_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_2"));\
