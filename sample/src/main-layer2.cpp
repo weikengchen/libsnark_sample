@@ -237,7 +237,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     auto proof_layer2 = r1cs_ppzksnark_prover<ppT_B>(pk, pb.primary_input(), pb.auxiliary_input());
     
     stringstream proofStream;
-    proofStream << layer2;
+    proofStream << proof_layer2;
 
     ofstream fileOut;
     fileOut.open("proof_layer2");
