@@ -163,7 +163,10 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     // save the root hash
     libff::bit_vector first_old_root = first_old_hash;
     libff::bit_vector first_new_root = first_new_hash;
-    
+	
+	serialize_bit_vector_nonewline(first_old_root);
+    serialize_bit_vector_nonewline(first_new_root);
+	
     // declare the constraint system
     LEAF_GADGET
     
