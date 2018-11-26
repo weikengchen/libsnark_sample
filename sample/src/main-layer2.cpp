@@ -18,6 +18,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <chrono>
+
 using namespace libsnark;
 using namespace std;
 
