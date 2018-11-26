@@ -214,8 +214,20 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	
 	libff::bit_vector empty_hash_value(digest_len);
 	
-    //prev_root_digest.generate_r1cs_witness(empty_hash_value);
-	//next_root_digest.generate_r1cs_witness(empty_hash_value);
+	libff::bit_vector primary_input_1_first_hash;
+	primary_input_1_first_hash.insert(primary_input_1_first_hash.end(), primary_input_1_as_bits.begin() + 1 - 1, primary_input_1_as_bits.begin() + 297 - 1);
+	primary_input_1_first_hash.insert(primary_input_1_first_hash.end(), primary_input_1_as_bits.begin() + 299 - 1, primary_input_1_as_bits.begin() + 299 - 1);
+	
+	libff::bit_vector primary_input_2_second_hash;
+	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 300 - 1, primary_input_2_as_bits.begin() + 593 - 1);
+	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 595 - 1, primary_input_2_as_bits.begin() + 596 - 1);
+	
+	serialize_bit_vector_nonewline(cout, primary_input_1_first_hash);
+	serialize_bit_vector_nonewline(cout, primary_input_2_second_hash);
+	
+    prev_root_digest.generate_r1cs_witness(primary_input_1_first_hash);
+	next_root_digest.generate_r1cs_witness(primary_input_2_second_hash);
+	
 	proof_1.generate_r1cs_witness(proof_1_in);
 	primary_input_1_bits.fill_with_bits(pb, primary_input_1_as_bits);
 	online_verifier_1.generate_r1cs_witness();
