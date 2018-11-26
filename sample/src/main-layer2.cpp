@@ -73,8 +73,8 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	primary_input_2_bits_second_half.insert(primary_input_2_bits_second_half.end(), primary_input_2_bits.begin() + 300 - 1, primary_input_2_bits.begin() + 595 - 1 + 1);\
 	primary_input_2_bits_second_half.insert(primary_input_2_bits_second_half.end(), primary_input_2_bits.begin() + 597 - 1, primary_input_2_bits.begin() + 598 - 1 + 1);\
 	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, prev_root_digest.bits, primary_input_1_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_hash_1"));\
-	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, primary_input_1_bits_second_half, primary_input_2_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_hash_2"));\
-	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, primary_input_2_bits_second_half, next_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_hash_3"));\
+	bit_vector_copy_gadget<FieldT_B> check_equal_2(pb, primary_input_1_bits_second_half, primary_input_2_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_hash_2"));\
+	bit_vector_copy_gadget<FieldT_B> check_equal_3(pb, primary_input_2_bits_second_half, next_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_hash_3"));\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
