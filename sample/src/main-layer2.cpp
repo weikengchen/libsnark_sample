@@ -144,6 +144,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     }
     provingKeyFromFile >> pk;
 	
+	auto start_time = chrono::high_resolution_clock::now();
+	
 	// read the proof 1 (packed)
     r1cs_ppzksnark_proof<ppT_A> proof_1_in;    
     ifstream fileIn2("proof_packed_1");
@@ -264,6 +266,12 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     fileOut.open("primary_input_layer2");
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
+	
+	auto end_time = chrono::high_resolution_clock::now();
+	
+	cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+	cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+	
 }
 
 /*
