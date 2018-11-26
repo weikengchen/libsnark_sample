@@ -61,11 +61,11 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, result_1, "online_verifier_1");\
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, result_2, "online_verifier_2");\
 	pb_variable_array<FieldT_B> primary_input_1_bits_first_half;\
-	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin() + 1 - 1, primary_input_1_bits.begin() + 297 - 1);\
-	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin() + 299 - 1, primary_input_1_bits.begin() + 299 - 1);\
+	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin() + 1 - 1, primary_input_1_bits.begin() + 297 - 1 + 1);\
+	primary_input_1_bits_first_half.insert(primary_input_1_bits_first_half.end(), primary_input_1_bits.begin() + 299 - 1, primary_input_1_bits.begin() + 299 - 1 + 1);\
 	pb_variable_array<FieldT_B> primary_input_1_bits_second_half;\
-	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 300 - 1, primary_input_1_bits.begin() + 593 - 1);\
-	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 595 - 1, primary_input_1_bits.begin() + 596 - 1);\
+	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 300 - 1, primary_input_1_bits.begin() + 595 - 1 + 1);\
+	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 597 - 1, primary_input_1_bits.begin() + 598 - 1 + 1);\
 	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, prev_root_digest.bits, primary_input_1_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
@@ -223,10 +223,10 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	primary_input_1_first_hash.insert(primary_input_1_first_hash.end(), primary_input_1_as_bits.begin() + 299 - 1, primary_input_1_as_bits.begin() + 299 - 1 + 1);
 	
 	libff::bit_vector primary_input_2_second_hash;
-	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 300 - 1, primary_input_2_as_bits.begin() + 593 - 1 + 1);
+	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 300 - 1, primary_input_2_as_bits.begin() + 595 - 1 + 1);
 	serialize_bit_vector_nonewline(cout, primary_input_2_second_hash);
 	cout << endl;
-	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 595 - 1, primary_input_2_as_bits.begin() + 596 - 1 + 1);
+	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 597 - 1, primary_input_2_as_bits.begin() + 598 - 1 + 1);
 	serialize_bit_vector_nonewline(cout, primary_input_2_second_hash);
 	
 	cout << endl;
