@@ -338,7 +338,7 @@ int main(void)
     libff::mnt4_pp::init_public_params();
 	libff::mnt6_pp::init_public_params();
 
-    test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+    //test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
     test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
     //test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
 }
