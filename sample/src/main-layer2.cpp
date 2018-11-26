@@ -54,8 +54,12 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	r1cs_ppzksnark_proof_variable<ppT_B> proof_2(pb, "proof_2");\
 	pb_variable_array<FieldT_B> primary_input_2_bits;\
 	primary_input_2_bits.allocate(pb, primary_input_size_in_bits, "primary_input_2_bits");\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, pb_variable<FieldT_B>(1), "online_verifier_1");\
-	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
+	pb_variable<FieldT_B> result_1;\
+    result_1.allocate(pb, "result");\
+	pb_variable<FieldT_B> result_2;\
+    result_2.allocate(pb, "result");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_1(pb, hardcoded_vk, primary_input_1_bits, FieldT_A::size_in_bits(), proof_1, result_1, "online_verifier_1");\
+	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, result_2, "online_verifier_2");\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
@@ -169,7 +173,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
     {
-		cout << el << endl;
         libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, FieldT_A::size_in_bits());
         primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
     }
@@ -209,6 +212,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	online_verifier_1.generate_r1cs_witness();
 	proof_2.generate_r1cs_witness(proof_2_in);
 	primary_input_2_bits.fill_with_bits(pb, primary_input_2_as_bits);
+	
+	pb.val(result_1) = FieldT_B::one();
 	//online_verifier_2.generate_r1cs_witness();
 	//check_equal_1.generate_r1cs_witness();
 	//check_equal_2.generate_r1cs_witness();
