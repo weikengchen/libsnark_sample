@@ -223,7 +223,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	primary_input_1_first_hash.insert(primary_input_1_first_hash.end(), primary_input_1_as_bits.begin() + 299 - 1, primary_input_1_as_bits.begin() + 299 - 1 + 1);
 	
 	libff::bit_vector primary_input_2_second_hash;
-	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 300 - 1, primary_input_2_as_bits.begin() + 593 - 1 + 1);
+	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 300 - 1, primary_input_2_as_bits.begin() + 596 - 1 + 1);
 	primary_input_2_second_hash.insert(primary_input_2_second_hash.end(), primary_input_2_as_bits.begin() + 595 - 1, primary_input_2_as_bits.begin() + 596 - 1 + 1);
 	
 	serialize_bit_vector_nonewline(cout, primary_input_1_first_hash);
