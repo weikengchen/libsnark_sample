@@ -120,6 +120,8 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
        fileIn.close();
     }
     provingKeyFromFile >> pk;
+	
+	auto start_time = chrono::high_resolution_clock::now();
     
     // generate the first test example -- we will use the same path because no tree is materalized
     const size_t digest_len = HashT_A::get_digest_len();
@@ -271,6 +273,11 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
     fileOut.open("primary_input_packed_2");
     fileOut << primaryinputStream.rdbuf();
     fileOut.close();
+	
+	auto end_time = chrono::high_resolution_clock::now();
+	
+	cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+	cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
 }
 
 template<typename ppT_A> void test_leaf_verifier(const std::string &annotation) {
