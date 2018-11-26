@@ -188,8 +188,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
         primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
     }
 	
-	serialize_bit_vector_nonewline(cout, primary_input_1_as_bits);
-	
 	libff::bit_vector primary_input_2_as_bits;
     for (const FieldT_A &el : primary_input_2_in)
     {
