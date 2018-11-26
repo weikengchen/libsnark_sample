@@ -229,8 +229,8 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	
     prev_root_digest.generate_r1cs_witness(primary_input_1_first_hash);
 	next_root_digest.generate_r1cs_witness(primary_input_2_second_hash);
-	unpack_input.generate_r1cs_constraints(true);
 	
+	unpack_input.generate_r1cs_witness_from_bits();
 	proof_1.generate_r1cs_witness(proof_1_in);
 	primary_input_1_bits.fill_with_bits(pb, primary_input_1_as_bits);
 	online_verifier_1.generate_r1cs_witness();
