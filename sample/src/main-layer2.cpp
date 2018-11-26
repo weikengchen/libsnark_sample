@@ -66,14 +66,13 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	pb_variable_array<FieldT_B> primary_input_1_bits_second_half;\
 	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 300 - 1, primary_input_1_bits.begin() + 595 - 1 + 1);\
 	primary_input_1_bits_second_half.insert(primary_input_1_bits_second_half.end(), primary_input_1_bits.begin() + 597 - 1, primary_input_1_bits.begin() + 598 - 1 + 1);\
+	bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, prev_root_digest.bits, primary_input_1_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
 	proof_2.generate_r1cs_constraints();\
 	online_verifier_1.generate_r1cs_constraints();\
-	online_verifier_2.generate_r1cs_constraints();
-
-	//bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, prev_root_digest.bits, primary_input_1_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
-	//check_equal_1.generate_r1cs_constraints(false, false);
+	online_verifier_2.generate_r1cs_constraints();\
+	check_equal_1.generate_r1cs_constraints(false, false);
 
 	//bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, primary_input_1_bits_first_half, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
 	//bit_vector_copy_gadget<FieldT_B> check_equal_2(pb, primary_input_1_bits_second_half, primary_input_2_bits_first_half, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_next_hash_1"));\
@@ -239,7 +238,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	primary_input_2_bits.fill_with_bits(pb, primary_input_2_as_bits);
 	online_verifier_2.generate_r1cs_witness();
 	pb.val(result_2) = FieldT_B::one();
-	//check_equal_1.generate_r1cs_witness();
+	check_equal_1.generate_r1cs_witness();
 	//check_equal_2.generate_r1cs_witness();
 	//check_equal_3.generate_r1cs_witness();
         
