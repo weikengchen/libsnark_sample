@@ -58,8 +58,8 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
 	r1cs_ppzksnark_online_verifier_gadget<ppT_B> online_verifier_2(pb, hardcoded_vk, primary_input_2_bits, FieldT_A::size_in_bits(), proof_2, pb_variable<FieldT_B>(1), "online_verifier_2");\
 	unpack_input.generate_r1cs_constraints(true);\
 	proof_1.generate_r1cs_constraints();\
-	proof_2.generate_r1cs_constraints();
-//	online_verifier_1.generate_r1cs_constraints();
+	proof_2.generate_r1cs_constraints();\
+	online_verifier_1.generate_r1cs_constraints();
 //	online_verifier_2.generate_r1cs_constraints();
 
 	//bit_vector_copy_gadget<FieldT_B> check_equal_1(pb, primary_input_1_bits_first_half, prev_root_digest.bits, pb_variable<FieldT_B>(1), FieldT_B::capacity(), FMT(annotation, " check_prev_hash_1"));\
@@ -169,6 +169,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	libff::bit_vector primary_input_1_as_bits;
     for (const FieldT_A &el : primary_input_1_in)
     {
+		cout << el << endl;
         libff::bit_vector v = libff::convert_field_element_to_bit_vector<FieldT_A>(el, FieldT_A::size_in_bits());
         primary_input_1_as_bits.insert(primary_input_1_as_bits.end(), v.begin(), v.end());
     }
@@ -195,7 +196,6 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
     
     LAYER2_GADGET(leaf_vk);
 	
-	
     const r1cs_constraint_system<FieldT_B> constraint_system = pb.get_constraint_system();
     cout << "Number of Leaf R1CS constraints: " << constraint_system.num_constraints() << endl;
 	
@@ -206,7 +206,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 	unpack_input.generate_r1cs_constraints(true);
 	proof_1.generate_r1cs_witness(proof_1_in);
 	primary_input_1_bits.fill_with_bits(pb, primary_input_1_as_bits);
-	//online_verifier_1.generate_r1cs_witness();
+	online_verifier_1.generate_r1cs_witness();
 	proof_2.generate_r1cs_witness(proof_2_in);
 	primary_input_2_bits.fill_with_bits(pb, primary_input_2_as_bits);
 	//online_verifier_2.generate_r1cs_witness();
