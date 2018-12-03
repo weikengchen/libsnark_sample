@@ -359,15 +359,20 @@ int main(void)
         libff::mnt4_pp::init_public_params();
         libff::mnt6_pp::init_public_params();
 
+	double tot;
+
 #if TEST_KEYGEN
         FILE* file1 = fopen("KeyGen_layer2_6to4", "w");
+	tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file1, "%lf\n", duration);
+		tot += duration;
         }
+	fprintf(file1, "avg: %lf\n", tot/test_num);
 #endif
 
 #if TEST_PROOF
@@ -380,6 +385,7 @@ int main(void)
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file2, "%lf\n", duration);
         }
+	fprintf(file2, "avg: %lf\n", tot/test_num);
 #endif
 
 
