@@ -100,7 +100,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
         typedef libff::Fr<ppT_B> FieldT_B;
 
         const size_t digest_len = HashT_A::get_digest_len();
-        const size_t tree_depth = 40;
+        const size_t tree_depth = 16;
 
         //cerr<<digest_len<<' '<<FieldT_A::size_in_bits()<<' '<<FieldT_B::size_in_bits()<<endl;
         //exit(0);
@@ -358,35 +358,35 @@ int main(void)
 {
         libff::mnt4_pp::init_public_params();
         libff::mnt6_pp::init_public_params();
-	double tot;
+        double tot;
 
 #if TEST_KEYGEN
         FILE* file1 = fopen("KeyGen_layer2_4to6", "w");
-	tot = 0;
+        tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file1, "%lf\n", duration);
-		tot += duration;
+                tot += duration;
         }
-	fprintf(file1, "avg: %lf\n", tot / test_num);
+        fprintf(file1, "avg: %lf\n", tot / test_num);
 #endif
 
 #if TEST_PROOF
         test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
         FILE* file2 = fopen("Proof_layer2_4to6", "w");
-	tot = 0;
+        tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file2, "%lf\n", duration);
-		tot += duration;
+                tot += duration;
         }
-	fprintf(file2, "avg: %lf\n", tot / test_num);
+        fprintf(file2, "avg: %lf\n", tot / test_num);
 #endif
 
 

@@ -361,35 +361,35 @@ int main(void)
 
         //cerr<<CLK_TCK<<endl;
         //exit(0);
-	double tot;
+        double tot;
 
 #if TEST_KEYGEN
         FILE* file1 = fopen("KeyGen_leaf", "w");
-	tot = 0;
+        tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp> > >("mnt4");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file1, "%lf\n", duration);
-		tot += duration;
+                tot += duration;
         }
-	fprintf(file1, "avg: %lf\n", tot/test_num);
+        fprintf(file1, "avg: %lf\n", tot/test_num);
 #endif
 
 #if TEST_PROOF
         test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp> > >("mnt4");
         FILE* file2 = fopen("Proof_leaf", "w");
-	tot = 0;
+        tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file2, "%lf\n", duration);
-		tot += duration;
+                tot += duration;
         }
-	fprintf(file2, "avg: %lf\n", tot/test_num);
+        fprintf(file2, "avg: %lf\n", tot/test_num);
 #endif
 //        test_leaf_verifier<libff::mnt4_pp>("mnt4");
 }
