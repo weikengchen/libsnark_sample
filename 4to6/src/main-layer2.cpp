@@ -23,9 +23,9 @@
 
 #include <chrono>
 
-#define test_num 5
+#define test_num 20
 #define CLK_TCK CLOCKS_PER_SEC
-#define TEST_KEYGEN false
+#define TEST_KEYGEN true
 #define TEST_PROOF true
 
 using namespace libsnark;
@@ -360,25 +360,25 @@ int main(void)
         libff::mnt6_pp::init_public_params();
 
 #if TEST_KEYGEN
-        FILE* file = fopen("KeyGen_layer2_4to6", "w");
+        FILE* file1 = fopen("KeyGen_layer2_4to6", "w");
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
-                fprintf(file, "%lf\n", duration);
+                fprintf(file1, "%lf\n", duration);
         }
 #endif
 
 #if TEST_PROOF
         test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
-        FILE* file = fopen("Proof_layer2_4to6", "w");
+        FILE* file2 = fopen("Proof_layer2_4to6", "w");
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
-                fprintf(file, "%lf\n", duration);
+                fprintf(file2, "%lf\n", duration);
         }
 #endif
 
