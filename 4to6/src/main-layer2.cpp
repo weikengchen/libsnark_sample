@@ -18,7 +18,15 @@
 #include <fstream>
 #include <sstream>
 
+#include <ctime>
+#include <cstdio>
+
 #include <chrono>
+
+#define test_num 5
+#define CLK_TCK CLOCKS_PER_SEC
+#define TEST_KEYGEN false
+#define TEST_PROOF true
 
 using namespace libsnark;
 using namespace std;
@@ -351,9 +359,29 @@ int main(void)
         libff::mnt4_pp::init_public_params();
         libff::mnt6_pp::init_public_params();
 
-        //test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
-        //test_layer2_prove< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
+#if TEST_KEYGEN
+        FILE* file = fopen("KeyGen_layer2_4to6", "w");
+        for (int i = 0; i < test_num; i++) {
+                clock_t Begin = clock();
+                test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+                clock_t End = clock();
+                double duration = double(End - Begin) / CLK_TCK;
+                fprintf(file, "%lf\n", duration);
+        }
+#endif
+
+#if TEST_PROOF
         test_layer2_gen< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
-        test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+        FILE* file = fopen("Proof_layer2_4to6", "w");
+        for (int i = 0; i < test_num; i++) {
+                clock_t Begin = clock();
+                test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
+                clock_t End = clock();
+                double duration = double(End - Begin) / CLK_TCK;
+                fprintf(file, "%lf\n", duration);
+        }
+#endif
+
+
         //    test_layer2_verifier<libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
 }

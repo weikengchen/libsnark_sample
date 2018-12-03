@@ -17,7 +17,15 @@
 #include <fstream>
 #include <sstream>
 
+#include <ctime>
+#include <cstdio>
+
 #include <chrono>
+
+#define test_num 5
+#define CLK_TCK CLOCKS_PER_SEC
+#define TEST_KEYGEN false
+#define TEST_PROOF true
 
 using namespace libsnark;
 using namespace std;
@@ -348,11 +356,33 @@ template<typename ppT_A> void test_leaf_verifier(const std::string &annotation) 
 
 int main(void)
 {
-        libff::mnt4_pp::init_public_params();
+        libff::mnt6_pp::init_public_params();
+        typedef libff::Fr<libff::mnt6_pp> FieldT_A;
 
-        typedef libff::Fr<libff::mnt4_pp> FieldT_A;
+        //cerr<<CLK_TCK<<endl;
+        //exit(0);
 
-        test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp> > >("mnt4");
-        test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
-        test_leaf_verifier<libff::mnt4_pp>("mnt4");
+#if TEST_KEYGEN
+        FILE* file = fopen("KeyGen_leaf_mnt6", "w");
+        for (int i = 0; i < test_num; i++) {
+                clock_t Begin = clock();
+                test_leaf_gen< libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt6_pp> > >("mnt6");
+                clock_t End = clock();
+                double duration = double(End - Begin) / CLK_TCK;
+                fprintf(file, "%lf\n", duration);
+        }
+#endif
+
+#if TEST_PROOF
+        test_leaf_gen< libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt6_pp> > >("mnt6");
+        FILE* file = fopen("Proof_leaf_mnt6", "w");
+        for (int i = 0; i < test_num; i++) {
+                clock_t Begin = clock();
+                test_leaf_example<libff::mnt6_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt6");
+                clock_t End = clock();
+                double duration = double(End - Begin) / CLK_TCK;
+                fprintf(file, "%lf\n", duration);
+        }
+#endif
+//        test_leaf_verifier<libff::mnt6_pp>("mnt6");
 }
