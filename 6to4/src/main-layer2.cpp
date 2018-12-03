@@ -378,12 +378,14 @@ int main(void)
 #if TEST_PROOF
         test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
         FILE* file2 = fopen("Proof_layer2_6to4", "w");
+	tot = 0;
         for (int i = 0; i < test_num; i++) {
                 clock_t Begin = clock();
                 test_layer2_prove< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
                 clock_t End = clock();
                 double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file2, "%lf\n", duration);
+		tot += duration;
         }
 	fprintf(file2, "avg: %lf\n", tot/test_num);
 #endif
