@@ -86,7 +86,10 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
         prev_path_var.generate_r1cs_constraints(); \
         mls.generate_r1cs_constraints();
 
-template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
+template<typename ppT_A, typename HashT_A> double test_leaf_gen(const std::string &annotation) {
+
+        auto start_time = chrono::high_resolution_clock::now();
+
         typedef libff::Fr<ppT_A> FieldT_A;
 
         const size_t digest_len = HashT_A::get_digest_len();
@@ -116,22 +119,18 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
         fileOut.open("pk_packed_leaf");
         fileOut << pk_leaf.rdbuf();
         fileOut.close();
+
+
+        auto end_time = chrono::high_resolution_clock::now();
+
+        //        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+        //        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+        return chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
 }
 
-template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
-        auto tree_depth = 16;
-
-        // read the proving key
-        r1cs_ppzksnark_proving_key<ppT_A> pk;
-        ifstream fileIn("pk_packed_leaf");
-        stringstream provingKeyFromFile;
-        if (fileIn) {
-                provingKeyFromFile << fileIn.rdbuf();
-                fileIn.close();
-        }
-        provingKeyFromFile >> pk;
-
+template<typename ppT_A, typename FieldT_A, typename HashT_A> double test_leaf_example(r1cs_ppzksnark_proving_key<ppT_A> &pk, const std::string &annotation) {
         auto start_time = chrono::high_resolution_clock::now();
+        auto tree_depth = 16;
 
         // generate the first test example -- we will use the same path because no tree is materalized
         const size_t digest_len = HashT_A::get_digest_len();
@@ -286,8 +285,9 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
 
         auto end_time = chrono::high_resolution_clock::now();
 
-        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
-        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+//        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+//        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+        return chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
 }
 
 template<typename ppT_A> void test_leaf_verifier(const std::string &annotation) {
@@ -364,13 +364,13 @@ int main(void)
         double tot;
 
 #if TEST_KEYGEN
-        FILE* file1 = fopen("KeyGen_leaf_mnt6", "w");
+        FILE* file1 = fopen("KeyGen_leaf", "w");
         tot = 0;
         for (int i = 0; i < test_num; i++) {
-                clock_t Begin = clock();
-                test_leaf_gen< libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt6_pp> > >("mnt6");
-                clock_t End = clock();
-                double duration = double(End - Begin) / CLK_TCK;
+                //clock_t Begin = clock();
+                double duration = test_leaf_gen< libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt6_pp> > >("mnt6");
+                //clock_t End = clock();
+                //double duration = double(End - Begin) / CLK_TCK;
                 fprintf(file1, "%lf\n", duration);
                 tot += duration;
         }
@@ -379,13 +379,27 @@ int main(void)
 
 #if TEST_PROOF
         test_leaf_gen< libff::mnt6_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt6_pp> > >("mnt6");
-        FILE* file2 = fopen("Proof_leaf_mnt6", "w");
+        // read the proving key
+        r1cs_ppzksnark_proving_key<libff::mnt6_pp> pk;
+        ifstream fileIn("pk_packed_leaf");
+        stringstream provingKeyFromFile;
+        if (fileIn) {
+                provingKeyFromFile << fileIn.rdbuf();
+                fileIn.close();
+        }
+        provingKeyFromFile >> pk;
+
+
+        FILE* file2 = fopen("Proof_leaf", "w");
         tot = 0;
         for (int i = 0; i < test_num; i++) {
-                clock_t Begin = clock();
-                test_leaf_example<libff::mnt6_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt6");
-                clock_t End = clock();
-                double duration = double(End - Begin) / CLK_TCK;
+                /*
+                      clock_t Begin = clock();
+                      test_leaf_example<libff::mnt6_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt6");
+                      clock_t End = clock();
+                      double duration = double(End - Begin) / CLK_TCK;
+                 */
+                double duration = test_leaf_example<libff::mnt6_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >(pk, "mnt6");
                 fprintf(file2, "%lf\n", duration);
                 tot += duration;
         }
