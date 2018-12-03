@@ -92,7 +92,7 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
         typedef libff::Fr<ppT_B> FieldT_B;
 
         const size_t digest_len = HashT_A::get_digest_len();
-        const size_t tree_depth = 40;
+        const size_t tree_depth = 16;
 
         //cerr<<digest_len<<' '<<FieldT_A::size_in_bits()<<' '<<FieldT_B::size_in_bits()<<endl;
         //exit(0);
