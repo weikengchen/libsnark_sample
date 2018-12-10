@@ -86,7 +86,10 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
         prev_path_var.generate_r1cs_constraints(); \
         mls.generate_r1cs_constraints();
 
-template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string &annotation) {
+template<typename ppT_A, typename HashT_A> double test_leaf_gen(const std::string &annotation) {
+
+        auto start_time = chrono::high_resolution_clock::now();
+
         typedef libff::Fr<ppT_A> FieldT_A;
 
         const size_t digest_len = HashT_A::get_digest_len();
@@ -116,22 +119,18 @@ template<typename ppT_A, typename HashT_A> void test_leaf_gen(const std::string 
         fileOut.open("pk_packed_leaf");
         fileOut << pk_leaf.rdbuf();
         fileOut.close();
+
+
+        auto end_time = chrono::high_resolution_clock::now();
+
+        //        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+        //        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+        return chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
 }
 
-template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_example(const std::string &annotation) {
-        auto tree_depth = 16;
-
-        // read the proving key
-        r1cs_ppzksnark_proving_key<ppT_A> pk;
-        ifstream fileIn("pk_packed_leaf");
-        stringstream provingKeyFromFile;
-        if (fileIn) {
-                provingKeyFromFile << fileIn.rdbuf();
-                fileIn.close();
-        }
-        provingKeyFromFile >> pk;
-
+template<typename ppT_A, typename FieldT_A, typename HashT_A> double test_leaf_example(r1cs_ppzksnark_proving_key<ppT_A> &pk, const std::string &annotation) {
         auto start_time = chrono::high_resolution_clock::now();
+        auto tree_depth = 16;
 
         // generate the first test example -- we will use the same path because no tree is materalized
         const size_t digest_len = HashT_A::get_digest_len();
@@ -286,9 +285,15 @@ template<typename ppT_A, typename FieldT_A, typename HashT_A> void test_leaf_exa
 
         auto end_time = chrono::high_resolution_clock::now();
 
+<<<<<<< HEAD
 	cout << "\n\n\n";
 	cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
         cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+=======
+//        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+//        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+        return chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
+>>>>>>> 39d2ccfe42082d725ff35e47aa6d6755434c3fef
 }
 
 template<typename ppT_A> void test_leaf_verifier(const std::string &annotation) {
@@ -360,37 +365,21 @@ int main(void)
         libff::mnt4_pp::init_public_params();
         typedef libff::Fr<libff::mnt4_pp> FieldT_A;
 
-        //cerr<<CLK_TCK<<endl;
-        //exit(0);
-        double tot;
-
 #if TEST_KEYGEN
         for (int i = 0; i < test_num; i++) {
-                //clock_t Begin = clock();
                 auto start_time = chrono::high_resolution_clock::now();
 		test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp> > >("mnt4");
-                //clock_t End = clock();
                 auto end_time = chrono::high_resolution_clock::now();
 		
 		cout << "\n\n\n";
-        	cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
         	cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
         }
 #endif
 
 #if TEST_PROOF
-        //test_leaf_gen< libff::mnt4_pp, CRH_with_bit_out_gadget<libff::Fr<libff::mnt4_pp> > >("mnt4");
-        //FILE* file2 = fopen("Proof_leaf", "w");
-        //tot = 0;
         for (int i = 0; i < test_num; i++) {
-                //clock_t Begin = clock();
                 test_leaf_example<libff::mnt4_pp, FieldT_A, CRH_with_bit_out_gadget<FieldT_A> >("mnt4");
-                //clock_t End = clock();
-                //double duration = double(End - Begin) / CLK_TCK;
-                //fprintf(file2, "%lf\n", duration);
-                //tot += duration;
         }
-        //fprintf(file2, "avg: %lf\n", tot/test_num);
 #endif
 //        test_leaf_verifier<libff::mnt4_pp>("mnt4");
 }

@@ -94,7 +94,9 @@ void serialize_bit_vector_nonewline(std::ostream &out, const libff::bit_vector &
         check_equal_2.generate_r1cs_constraints(false, false); \
         check_equal_3.generate_r1cs_constraints(false, false);
 
-template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string &annotation) {
+template<typename ppT_A, typename ppT_B> double test_layer2_gen(const std::string &annotation) {
+        auto start_time = chrono::high_resolution_clock::now();
+
         typedef libff::Fr<ppT_A> FieldT_A;
         typedef CRH_with_bit_out_gadget<FieldT_A> HashT_A;
         typedef libff::Fr<ppT_B> FieldT_B;
@@ -139,25 +141,20 @@ template<typename ppT_A, typename ppT_B> void test_layer2_gen(const std::string 
         fileOut.open("pk_layer2");
         fileOut << pk_layer2.rdbuf();
         fileOut.close();
+
+        auto end_time = chrono::high_resolution_clock::now();
+
+//        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
+//        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+        return chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
 }
 
 
-template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::string &annotation) {
+template<typename ppT_A, typename ppT_B> double test_layer2_prove(r1cs_ppzksnark_proving_key<ppT_B> &pk, const std::string &annotation) {
+        auto start_time = chrono::high_resolution_clock::now();
         typedef libff::Fr<ppT_A> FieldT_A;
         typedef CRH_with_bit_out_gadget<FieldT_A> HashT_A;
         typedef libff::Fr<ppT_B> FieldT_B;
-
-        // read the proving key
-        r1cs_ppzksnark_proving_key<ppT_B> pk;
-        ifstream fileIn("pk_layer2");
-        stringstream provingKeyFromFile;
-        if (fileIn) {
-                provingKeyFromFile << fileIn.rdbuf();
-                fileIn.close();
-        }
-        provingKeyFromFile >> pk;
-
-        auto start_time = chrono::high_resolution_clock::now();
 
         // read the proof 1 (packed)
         r1cs_ppzksnark_proof<ppT_A> proof_1_in;
@@ -372,6 +369,7 @@ int main(void)
 #endif
 
 #if TEST_PROOF
+<<<<<<< HEAD
         for (int i = 0; i < test_num; i++) {
 		test_layer2_prove< libff::mnt4_pp, libff::mnt6_pp >("mnt4->6");
         }
