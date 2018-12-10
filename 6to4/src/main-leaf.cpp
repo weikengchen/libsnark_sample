@@ -22,7 +22,7 @@
 
 #include <chrono>
 
-#define test_num 20
+#define test_num 1
 #define CLK_TCK CLOCKS_PER_SEC
 #define TEST_KEYGEN true
 #define TEST_PROOF true

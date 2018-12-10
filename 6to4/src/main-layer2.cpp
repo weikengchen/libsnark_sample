@@ -23,7 +23,7 @@
 
 #include <chrono>
 
-#define test_num 20
+#define test_num 5
 #define CLK_TCK CLOCKS_PER_SEC
 #define TEST_KEYGEN true
 #define TEST_PROOF true
@@ -282,9 +282,9 @@ template<typename ppT_A, typename ppT_B> void test_layer2_prove(const std::strin
 
         auto end_time = chrono::high_resolution_clock::now();
 
-        cout << chrono::duration_cast<chrono::seconds>(end_time - start_time).count() << ":";
-        cout << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
-
+	cerr << "\n\n";
+        cerr << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << ":";
+	cerr << "\n\n";
 }
 
 /*
@@ -359,35 +359,22 @@ int main(void)
         libff::mnt4_pp::init_public_params();
         libff::mnt6_pp::init_public_params();
 
-        double tot;
-
 #if TEST_KEYGEN
-        FILE* file1 = fopen("KeyGen_layer2_6to4", "w");
-        tot = 0;
         for (int i = 0; i < test_num; i++) {
-                clock_t Begin = clock();
-                test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
-                clock_t End = clock();
-                double duration = double(End - Begin) / CLK_TCK;
-                fprintf(file1, "%lf\n", duration);
-                tot += duration;
-        }
-        fprintf(file1, "avg: %lf\n", tot/test_num);
+        	auto start_time = chrono::high_resolution_clock::now();        
+		test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
+        	auto end_time = chrono::high_resolution_clock::now();
+
+		cerr << "\n\n";
+		cerr << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
+		cerr << "\n\n";
+	}
 #endif
 
 #if TEST_PROOF
-        test_layer2_gen< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
-        FILE* file2 = fopen("Proof_layer2_6to4", "w");
-        tot = 0;
         for (int i = 0; i < test_num; i++) {
-                clock_t Begin = clock();
                 test_layer2_prove< libff::mnt6_pp, libff::mnt4_pp >("mnt6->4");
-                clock_t End = clock();
-                double duration = double(End - Begin) / CLK_TCK;
-                fprintf(file2, "%lf\n", duration);
-                tot += duration;
         }
-        fprintf(file2, "avg: %lf\n", tot/test_num);
 #endif
 
 
